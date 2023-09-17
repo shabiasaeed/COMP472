@@ -537,26 +537,35 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--max_depth', type=int, help='maximum search depth')
     parser.add_argument('--max_time', type=float, help='maximum search time')
-    parser.add_argument('--game_type', type=str, default="manual", help='game type: auto|attacker|defender|manual')
+    # Modified the input parameter for game_type
+    parser.add_argument('--game_type', type=str, default="H-H", help='game type: AI-AI|H-AI|AI-H|H-H')
     parser.add_argument('--broker', type=str, help='play via a game broker')
+    # Added the input parameter for max_turns
+    parser.add_argument('--max_turns',type=int, help='Max Turns: Default is 100')
+    # Added the input parameter for alpha_beta
+    parser.add_argument('--alpha_beta',default=True,action='store_false',help='force the use of either minimax (FALSE) or alpha-beta (TRUE)')
     args = parser.parse_args()
 
     # parse the game type
-    if args.game_type == "attacker":
+    if args.game_type == "H-AI":
         game_type = GameType.AttackerVsComp
-    elif args.game_type == "defender":
+    elif args.game_type == "AI-H":
         game_type = GameType.CompVsDefender
-    elif args.game_type == "manual":
+    elif args.game_type == "H-H":
         game_type = GameType.AttackerVsDefender
     else:
         game_type = GameType.CompVsComp
 
     # set up game options
-    options = Options(game_type=game_type)
+    options = Options(game_type=game_type)  
 
     # override class defaults via command line options
+    if args.alpha_beta is not None:
+        options.alpha_beta = args.alpha_beta
     if args.max_depth is not None:
         options.max_depth = args.max_depth
+    if args.max_turns is not None:
+        options.max_turns = args.max_turns
     if args.max_time is not None:
         options.max_time = args.max_time
     if args.broker is not None:
