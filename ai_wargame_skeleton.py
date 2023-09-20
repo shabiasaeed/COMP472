@@ -317,6 +317,13 @@ class Game:
         if unit is None or unit.player != self.next_player:
             return False
         unit = self.get(coords.dst)
+        #logic for one step at a time here 
+        if (abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row):
+            pass
+        else:
+            print("Invalid Entry(Move one step at a time or don't move diagonally)!")
+            return False
+        # returns true is the dest attacker or dest defender is empty else returns false
         return (unit is None)
 
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
