@@ -338,11 +338,12 @@ class Game:
         if unit is None or unit.player != self.next_player:
             # print("False loop2 {} {} {}".format(unit.player,self.next_player,unit))
             return False 
-        unit = self.get(coords.dst) 
+        unit = self.get(coords.dst)    
+        print(unit)     
         #logic for one step at a time here 
         # if (abs(row_source - row_target) == 1 and col_source==col_target) or (abs(col_source - col_target) == 1 and row_source == row_target):
         # if((abs(coords.dst.row-coords.src.row) != 1 and coords.dst.col == coords.src.col) or (abs(coords.dst.col-coords.src.col != 1) and coords.dst.row == coords.src.row) ):
-        if (abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row):
+        if (  ((abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row)) and unit is None):
             return(Game.valid_movement(self.get(coords.src).to_string()[0],self.get(coords.src).to_string()[1],coords.src.row,coords.dst.row,coords.src.col,coords.dst.col))
         # logic for self killing or meaning entering the same coordinates like C4 C4
         elif(abs(coords.src.row - coords.dst.row)==0 and abs(coords.src.col - coords.dst.col) == 0):
