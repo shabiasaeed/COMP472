@@ -312,11 +312,24 @@ class Game:
     def is_valid_move(self, coords : CoordPair) -> bool:
         """Validate a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
         if not self.is_valid_coord(coords.src) or not self.is_valid_coord(coords.dst):
+            print("False loop 1")
             return False
         unit = self.get(coords.src)
         if unit is None or unit.player != self.next_player:
+            print("False loop2 {} {} {}".format(unit.player,self.next_player,unit))
+            return False 
+        unit = self.get(coords.dst) 
+        #logic for one step at a time here 
+        # if (abs(row_source - row_target) == 1 and col_source==col_target) or (abs(col_source - col_target) == 1 and row_source == row_target):
+        # if((abs(coords.dst.row-coords.src.row) != 1 and coords.dst.col == coords.src.col) or (abs(coords.dst.col-coords.src.col != 1) and coords.dst.row == coords.src.row) ):
+        if (abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row):
+            pass
+        else:
+            print("One step at a time!! or player cannot move diagonally!")
+            print(type(int(self.get(coords.src).to_string()[2])))
+            print(self.get(coords.src).to_string()[2]) # prints the health of src. Put [0] for checking attacker or defender and [1] to check for virus or AI or etc.
             return False
-        unit = self.get(coords.dst)
+        # returns true is the dest attacker or dest defender is empty else returns false
         return (unit is None)
 
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
@@ -325,7 +338,7 @@ class Game:
             self.set(coords.dst,self.get(coords.src))
             self.set(coords.src,None)
             return (True,"")
-        return (False,"invalid move")
+        return (False,"invalid move hahahahaha")
 
     def next_turn(self):
         """Transitions game to the next turn."""
@@ -373,12 +386,12 @@ class Game:
     def read_move(self) -> CoordPair:
         """Read a move from keyboard and return as a CoordPair."""
         while True:
-            s = input(F'Player {self.next_player.name}, enter your move: ')
+            s = input(F'Player {self.next_player.name}, enter your movessss: ')
             coords = CoordPair.from_string(s)
             if coords is not None and self.is_valid_coord(coords.src) and self.is_valid_coord(coords.dst):
                 return coords
             else:
-                print('Invalid coordinates! Try again.')
+                print('Invalid coordinates! Try again baby.')
     
     def human_turn(self):
         """Human player plays a move (or get via broker)."""
@@ -397,6 +410,7 @@ class Game:
         else:
             while True:
                 mv = self.read_move()
+                # print(mv) prints coordinates entered like C4 D4
                 (success,result) = self.perform_move(mv)
                 if success:
                     print(f"Player {self.next_player.name}: ",end='')
@@ -404,7 +418,7 @@ class Game:
                     self.next_turn()
                     break
                 else:
-                    print("The move is not valid! Try again.")
+                    print("The move is not valid! Try again your asss!!.")
 
     def computer_turn(self) -> CoordPair | None:
         """Computer plays a move."""
@@ -557,8 +571,8 @@ def main():
         game_type = GameType.CompVsComp
 
     # set up game options
-    options = Options(game_type=game_type)  
-
+    options = Options(game_type=game_type)
+    
     # override class defaults via command line options
     if args.alpha_beta is not None:
         options.alpha_beta = args.alpha_beta
