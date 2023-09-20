@@ -274,6 +274,26 @@ class Game:
         new = copy.copy(self)
         new.board = copy.deepcopy(self.board)
         return new
+    
+    def valid_movement(attacker_or_defender,unit_type, src_row, dst_row, src_col, dst_col):
+        dict_for_attacker_and_defender = {'a': ['A', 'F', 'P', 'T', 'V'], 'd': ['A', 'F', 'P', 'T', 'V']}
+        
+        units = dict_for_attacker_and_defender[attacker_or_defender]        
+        for which_unit in units:
+            if unit_type == which_unit:
+                if which_unit == 'A' or which_unit == 'F' or which_unit == 'P':
+                    if attacker_or_defender == 'a':
+                        if((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):
+                            return True
+                        else:
+                            return False
+                    elif attacker_or_defender == 'd':
+                        if((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)):
+                            return True
+                        else:
+                            return False
+                else:
+                    return True
 
     def is_empty(self, coord : Coord) -> bool:
         """Check if contents of a board cell of the game at Coord is empty (must be valid coord)."""
@@ -316,16 +336,20 @@ class Game:
             return False
         unit = self.get(coords.src)
         if unit is None or unit.player != self.next_player:
-            print("False loop2 {} {} {}".format(unit.player,self.next_player,unit))
+            # print("False loop2 {} {} {}".format(unit.player,self.next_player,unit))
             return False 
         unit = self.get(coords.dst) 
         #logic for one step at a time here 
         # if (abs(row_source - row_target) == 1 and col_source==col_target) or (abs(col_source - col_target) == 1 and row_source == row_target):
         # if((abs(coords.dst.row-coords.src.row) != 1 and coords.dst.col == coords.src.col) or (abs(coords.dst.col-coords.src.col != 1) and coords.dst.row == coords.src.row) ):
         if (abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row):
-            pass
+            return(Game.valid_movement(self.get(coords.src).to_string()[0],self.get(coords.src).to_string()[1],coords.src.row,coords.dst.row,coords.src.col,coords.dst.col))
+        # logic for self killing or meaning entering the same coordinates like C4 C4
+        elif(abs(coords.src.row - coords.dst.row)==0 and abs(coords.src.col - coords.dst.col) == 0):
+            return True
         else:
             print("One step at a time!! or player cannot move diagonally!")
+            print(Unit(player=Player.Defender))
             print(type(int(self.get(coords.src).to_string()[2])))
             print(self.get(coords.src).to_string()[2]) # prints the health of src. Put [0] for checking attacker or defender and [1] to check for virus or AI or etc.
             return False
