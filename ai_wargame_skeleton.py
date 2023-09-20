@@ -339,7 +339,7 @@ class Game:
             # print("False loop2 {} {} {}".format(unit.player,self.next_player,unit))
             return False 
         unit = self.get(coords.dst)    
-        print(unit)     
+        # print(unit)     
         #logic for one step at a time here 
         # if (abs(row_source - row_target) == 1 and col_source==col_target) or (abs(col_source - col_target) == 1 and row_source == row_target):
         # if((abs(coords.dst.row-coords.src.row) != 1 and coords.dst.col == coords.src.col) or (abs(coords.dst.col-coords.src.col != 1) and coords.dst.row == coords.src.row) ):
@@ -349,10 +349,10 @@ class Game:
         elif(abs(coords.src.row - coords.dst.row)==0 and abs(coords.src.col - coords.dst.col) == 0):
             return True
         else:
-            print("One step at a time!! or player cannot move diagonally!")
-            print(Unit(player=Player.Defender))
-            print(type(int(self.get(coords.src).to_string()[2])))
-            print(self.get(coords.src).to_string()[2]) # prints the health of src. Put [0] for checking attacker or defender and [1] to check for virus or AI or etc.
+            # print("One step at a time!! or player cannot move diagonally!")
+            # print(Unit(player=Player.Defender))
+            # print(type(int(self.get(coords.src).to_string()[2])))
+            # print(self.get(coords.src).to_string()[2]) # prints the health of src. Put [0] for checking attacker or defender and [1] to check for virus or AI or etc.
             return False
         # returns true is the dest attacker or dest defender is empty else returns false
         return (unit is None)
