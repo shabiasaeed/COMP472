@@ -275,7 +275,26 @@ class Game:
         new.board = copy.deepcopy(self.board)
         return new
     
-    def valid_movement(attacker_or_defender,unit_type, src_row, dst_row, src_col, dst_col):
+
+    def is_adjacent_occupied(self, player, coord : Coord) -> bool:
+        """Check if any adjacent cell of the game at Coord is occupied (must be valid coord)."""
+        values = []
+        for adj in coord.iter_adjacent():
+            try:
+                if self.is_valid_coord(adj):
+                    if self.is_empty(adj):
+                        values.append(True)
+                    try:
+                        if(player != self.get(adj).to_string()[0]):
+                            values.append(False)
+                    except:
+                        continue
+            except:
+                continue
+        return not all(values)
+    
+
+    def valid_movement(self, attacker_or_defender, unit_type, src_row, dst_row, src_col, dst_col):
         dict_for_attacker_and_defender = {'a': ['A', 'F', 'P', 'T', 'V'], 'd': ['A', 'F', 'P', 'T', 'V']}
         
         units = dict_for_attacker_and_defender[attacker_or_defender]        
@@ -283,17 +302,18 @@ class Game:
             if unit_type == which_unit:
                 if which_unit == 'A' or which_unit == 'F' or which_unit == 'P':
                     if attacker_or_defender == 'a':
-                        if((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):
+                        if(((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)) and not self.is_adjacent_occupied(attacker_or_defender, Coord(src_row, src_col))):
                             return True
                         else:
                             return False
                     elif attacker_or_defender == 'd':
-                        if((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)):
+                        if(((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)) and not self.is_adjacent_occupied(attacker_or_defender, Coord(src_row, src_col))):
                             return True
                         else:
                             return False
                 else:
                     return True
+
 
     def is_empty(self, coord : Coord) -> bool:
         """Check if contents of a board cell of the game at Coord is empty (must be valid coord)."""
@@ -339,7 +359,7 @@ class Game:
         unit = self.get(coords.dst)
         #logic for one step at a time here 
         if ( ((abs(coords.src.row - coords.dst.row)==1 and coords.dst.col == coords.src.col) or (abs(coords.src.col - coords.dst.col) == 1 and coords.dst.row == coords.src.row ))and unit is None ):
-            return(Game.valid_movement(self.get(coords.src).to_string()[0],self.get(coords.src).to_string()[1],coords.src.row,coords.dst.row,coords.src.col,coords.dst.col))
+            return(Game.valid_movement(self, self.get(coords.src).to_string()[0], self.get(coords.src).to_string()[1], coords.src.row, coords.dst.row, coords.src.col, coords.dst.col))
         # logic for self killing or meaning entering the same coordinates like C4 C4
         elif(abs(coords.src.row - coords.dst.row)==0 and abs(coords.src.col - coords.dst.col) == 0):
             return True
