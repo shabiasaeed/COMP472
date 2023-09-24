@@ -418,7 +418,15 @@ class Game:
                     self.set(src_coord, None)
                 if self.get(dst_coord) is not None and self.get(dst_coord).health == 0:
                     self.set(dst_coord, None) 
-            if not under_attack:           
+            if not under_attack:
+                if self.get(dst_coord) is not None and src_unit.player == dst_unit.player:
+                    # checks if two players of the same team can repair each other or results in an invalid move
+                    if self.get(src_coord) != self.get(dst_coord):
+                        print("TODO: FOR HEALTH")
+                        return(False,"invalid move")          
+                    # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
+                    elif self.get(src_coord) == self.get(dst_coord) and coords.src != coords.dst: 
+                        return(False,"invalid move") 
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
