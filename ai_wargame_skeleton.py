@@ -401,8 +401,8 @@ class Game:
             if src_unit is not None and dst_unit is not None and src_unit.player != dst_unit.player:
                 under_attack = True
                 # Calculate damage amounts
-                src_damage = src_unit.damage_amount(dst_unit)
-                dst_damage = dst_unit.damage_amount(src_unit)
+                src_damage = dst_unit.damage_amount(src_unit)
+                dst_damage = src_unit.damage_amount(dst_unit)
                 print("Src damage on target ",end='')
                 print(src_damage)
                 print("tar damage on source ",end='')
