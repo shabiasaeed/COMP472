@@ -306,31 +306,18 @@ class Game:
                             return True
                         else:
                             dst_unit = self.get(Coord(dst_row,dst_col))
-                            if dst_unit and attacker_or_defender != dst_unit.to_string()[0] and ((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):
-                                # source_unit = Unit(self.get(Coord(src_row,src_col)).player,self.get(Coord(src_row,src_col)).type,self.get(Coord(src_row,src_col)).health)
-                                # dest_unit = Unit(self.get(Coord(dst_row,dst_col)).player,self.get(Coord(dst_row,dst_col)).type,self.get(Coord(dst_row,dst_col)).health)
-                                # print(source_unit.damage_amount(dest_unit))
-                                # print("Printed!")
+                            if dst_unit and attacker_or_defender != dst_unit.to_string()[0] and ((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):                               
                                 return True
                             else:
-                                print("print testing")                               
-                                # print((self.get(coords.src).player).damage_amount(self.get(Coord(src_row,src_col))))
                                 return False
                     elif attacker_or_defender == 'd':
                         if(((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)) and not self.is_adjacent_occupied(attacker_or_defender, Coord(src_row, src_col))):
                             return True
                         else:
                             unit = self.get(Coord(dst_row,dst_col))
-                            if unit and attacker_or_defender != unit.to_string()[0] and ((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)):
-                                # source_unit = Unit(self.get(Coord(src_row,src_col)).player,self.get(Coord(src_row,src_col)).type,self.get(Coord(src_row,src_col)).health)
-                                # dest_unit = Unit(self.get(Coord(dst_row,dst_col)).player,self.get(Coord(dst_row,dst_col)).type,self.get(Coord(dst_row,dst_col)).health)
-                                # print(source_unit.damage_amount(dest_unit))
-                                # print("Printed!")
+                            if unit and attacker_or_defender != unit.to_string()[0] and ((dst_row <= src_row and dst_col > src_col) or (dst_col <= src_col and dst_row > src_row)):                                
                                 return True
-                            else:
-                                # print(Unit.damage_amount(self.get(Coord(src_row,src_col))))
-                                # print("print testing")                                
-                                # print(dest_unit)
+                            else:                                
                                 return False
                 else:
                     return True
@@ -393,8 +380,10 @@ class Game:
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
         """Validate and perform a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
         if self.is_valid_move(coords):
+            # Retrieving the source and distance coordinates 
             src_coord = coords.src
             dst_coord = coords.dst
+            # Retrieving the attacker and defender units from cordinates of source and attacker
             src_unit = self.get(src_coord)
             dst_unit = self.get(dst_coord)
             under_attack = False
@@ -402,11 +391,7 @@ class Game:
                 under_attack = True
                 # Calculate damage amounts
                 src_damage = dst_unit.damage_amount(src_unit)
-                dst_damage = src_unit.damage_amount(dst_unit)
-                print("Src damage on target ",end='')
-                print(src_damage)
-                print("tar damage on source ",end='')
-                print(dst_damage)
+                dst_damage = src_unit.damage_amount(dst_unit)                
                 # Inflict damage on both units
                 self.mod_health(src_coord, -src_damage)
                 self.mod_health(dst_coord, -dst_damage)
@@ -420,11 +405,17 @@ class Game:
                 if self.get(dst_coord) is not None and src_unit.player == dst_unit.player:
                     # checks if two players of the same team can repair each other or results in an invalid move
                     if self.get(src_coord) != self.get(dst_coord):
-                        print("TODO: FOR HEALTH")
-                        return(False,"invalid move")          
+                        if(src_unit.to_string()[1] == 'A' or src_unit.to_string()[1] == 'T'):
+                            dst_repair = src_unit.repair_amount(dst_unit)
+                            self.mod_health(dst_coord,+dst_repair)                            
+                            return(True,"")     
+                        else:
+                            return(False,"invalid move")
                     # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
                     elif self.get(src_coord) == self.get(dst_coord) and coords.src != coords.dst: 
-                        return(False,"invalid move")    
+                        return(False,"invalid move")
+                    else:
+                        print("TODO: FOR SELF DESTRUCT")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
