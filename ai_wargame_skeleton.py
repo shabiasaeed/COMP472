@@ -394,10 +394,8 @@ class Game:
         for adj in coord.iter_surrounding():
             try:
                 if self.is_valid_coord(adj):        #checks if valid coord
-                    if self.is_empty(adj):          #checks if empty
+                    if not self.is_empty(adj):          #checks if empty
                         self.mod_health(adj,-2)     #inflict 2 units of damage
-                        if self.health <= 0:        #checks if unit is dead
-                            self.remove_dead(adj)   #removes the dead unit
             except:
                 continue
 
@@ -437,10 +435,17 @@ class Game:
                         else:
                             return(False,"invalid move")
                     # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
-                    elif self.get(src_coord) == self.get(dst_coord) and coords.src != coords.dst: 
-                        return(False,"invalid move")
+                    elif self.get(src_coord) == self.get(dst_coord): 
+                        self.splash_damage(coords.src)
+                        self.remove_dead(src_coord)
+                        if self.get(src_coord).type == UnitType.AI:
+                            if self.get(src_coord).player == Player.Attacker:
+                                self._attacker_has_ai = False
+                            else:
+                                self._defender_has_ai = False
+                        self.is_finished()
                     else:
-                        print("TODO: FOR SELF DESTRUCT")
+                        return(False,"invalid move")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
