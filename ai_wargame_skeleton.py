@@ -146,6 +146,17 @@ class Coord:
         yield Coord(self.row+1,self.col)
         yield Coord(self.row,self.col+1)
 
+    def iter_surrounding(self) -> Iterable[Coord]:
+        """Iterates over surrounding coords."""
+        yield Coord(self.row-1,self.col)    #left
+        yield Coord(self.row,self.col-1)    #up
+        yield Coord(self.row+1,self.col)    #right
+        yield Coord(self.row,self.col+1)    #down
+        yield Coord(self.row-1,self.col-1)  #up-left
+        yield Coord(self.row-1,self.col+1)  #up-right
+        yield Coord(self.row+1,self.col-1)  #down-left
+        yield Coord(self.row+1,self.col+1)  #down-right
+
     @classmethod
     def from_string(cls, s : str) -> Coord | None:
         """Create a Coord from a string. ex: D2."""
@@ -281,18 +292,18 @@ class Game:
         values = []
         for adj in coord.iter_adjacent():
             try:
-                if self.is_valid_coord(adj):
-                    if self.is_empty(adj):
-                        values.append(True)
+                if self.is_valid_coord(adj):        #checks if valid coord
+                    if self.is_empty(adj):          #checks if empty
+                        values.append(True)         #appends true if empty
                     try:
-                        if(player != self.get(adj).to_string()[0]):
-                            values.append(False)
+                        if(player != self.get(adj).to_string()[0]):     #checks if the adjacent cell is occupied by the other player
+                            values.append(False)                        #appends false if occupied by other player
                     except:
                         continue
             except:
                 continue
-        return not all(values)
-    
+        return not all(values)          #returns true if adjacent cells are occupied by other player 
+        
 
     def valid_movement(self, attacker_or_defender, unit_type, src_row, dst_row, src_col, dst_col):
         dict_for_attacker_and_defender = {'a': ['A', 'F', 'P', 'T', 'V'], 'd': ['A', 'F', 'P', 'T', 'V']}
@@ -377,6 +388,18 @@ class Game:
         # returns true is the dest attacker or dest defender is empty else returns false
         return (unit is None)
 
+
+    def splash_damage(self, coord: Coord):
+        """If this unit self-destructs, inflict splash damage (2 units) on units situated on the 8 surrounding tiles."""
+        for adj in coord.iter_surrounding():
+            try:
+                if self.is_valid_coord(adj):        #checks if valid coord
+                    if not self.is_empty(adj):          #checks if empty
+                        self.mod_health(adj,-2)     #inflict 2 units of damage
+            except:
+                continue
+
+        
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
         """Validate and perform a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
         if self.is_valid_move(coords):
@@ -412,10 +435,17 @@ class Game:
                         else:
                             return(False,"invalid move")
                     # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
-                    elif self.get(src_coord) == self.get(dst_coord) and coords.src != coords.dst: 
-                        return(False,"invalid move")
+                    elif self.get(src_coord) == self.get(dst_coord): 
+                        self.splash_damage(coords.src)
+                        self.remove_dead(src_coord)
+                        if self.get(src_coord).type == UnitType.AI:
+                            if self.get(src_coord).player == Player.Attacker:
+                                self._attacker_has_ai = False
+                            else:
+                                self._defender_has_ai = False
+                        self.is_finished()
                     else:
-                        print("TODO: FOR SELF DESTRUCT")
+                        return(False,"invalid move")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
