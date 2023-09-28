@@ -382,8 +382,7 @@ class Game:
         # logic for self killing or meaning entering the same coordinates like C4 C4
         elif(abs(coords.src.row - coords.dst.row)==0 and abs(coords.src.col - coords.dst.col) == 0):
             return True
-        else:
-            print("Invalid Entry(Move one step at a time or don't move diagonally)!")
+        else:            
             return False
         # returns true is the dest attacker or dest defender is empty else returns false
         return (unit is None)
@@ -429,9 +428,16 @@ class Game:
                     # checks if two players of the same team can repair each other or results in an invalid move
                     if self.get(src_coord) != self.get(dst_coord):
                         if(src_unit.to_string()[1] == 'A' or src_unit.to_string()[1] == 'T'):
-                            dst_repair = src_unit.repair_amount(dst_unit)
-                            self.mod_health(dst_coord,+dst_repair)                            
-                            return(True,"")     
+                            if(src_unit.to_string()[1] == 'A' and (dst_unit.to_string()[1] != 'V' and dst_unit.to_string()[1] != 'T')):
+                                return(False,"invalid move")
+                            elif(src_unit.to_string()[1] == 'T' and (dst_unit.to_string()[1] != 'A' and dst_unit.to_string()[1] != 'F' and dst_unit.to_string()[1] != 'P')):
+                                return(False,"invalid move")
+                            else:
+                                if(dst_unit.health >= 9):
+                                    return(False,"invalid move!")
+                                dst_repair = src_unit.repair_amount(dst_unit)
+                                self.mod_health(dst_coord,+dst_repair)                            
+                                return(True,"")     
                         else:
                             return(False,"invalid move")
                     # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
@@ -446,18 +452,22 @@ class Game:
                         self.is_finished()
                     else:
                         return(False,"invalid move")
+                with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+                    f.write("Move from "+src_coord.to_string()+" to "+dst_coord.to_string()+"\n")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
+        with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+                    f.write("Move from "+coords.src.to_string()+" to "+coords.dst.to_string()+"\n")
         return (False,"invalid move")
 
     def next_turn(self):
         """Transitions game to the next turn."""
         self.next_player = self.next_player.next()
-        self.turns_played += 1
+        self.turns_played += 1  
 
     def to_string(self) -> str:
-        """Pretty text representation of the game."""
+        """Pretty text representation of the game."""       
         dim = self.options.dim
         output = ""
         output += f"Next player: {self.next_player.name}\n"
@@ -485,6 +495,8 @@ class Game:
 
     def __str__(self) -> str:
         """Default string representation of a game."""
+        with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+            f.write(self.to_string()+"\n")
         return self.to_string()
     
     def is_valid_coord(self, coord: Coord) -> bool:
@@ -528,7 +540,10 @@ class Game:
                     self.next_turn()
                     break
                 else:
-                    print("The move is not valid! Try again.")
+                    print("The move is not valid! Try again.")                    
+                    with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+                        f.write("Move from "+str(mv.src)+" to "+str(mv.dst)+"\n")
+                        f.write("The move is not valid! Try again. \n")
 
     def computer_turn(self) -> CoordPair | None:
         """Computer plays a move."""
@@ -695,6 +710,11 @@ def main():
     if args.broker is not None:
         options.broker = args.broker
 
+    # Printing and writing max turns 
+    print("Max Turns = "+str(options.max_turns))
+    with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{options.max_turns}.txt","a") as f:
+        f.write("Max turns = "+str(options.max_turns) +"\n")
+
     # create a new game
     game = Game(options=options)
 
@@ -704,7 +724,10 @@ def main():
         print(game)
         winner = game.has_winner()
         if winner is not None:
-            print(f"{winner.name} wins!")
+            print(f"{winner.name} wins! in {game.turns_played} turns ")
+            with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{options.max_turns}.txt",'a') as f:
+                winner = winner.name
+                f.write(winner+" wins! in "+ str(game.turns_played) + " turns")
             break
         if game.options.game_type == GameType.AttackerVsDefender:
             game.human_turn()
