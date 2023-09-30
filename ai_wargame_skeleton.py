@@ -316,8 +316,8 @@ class Game:
                         if(((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)) and not self.is_adjacent_occupied(attacker_or_defender, Coord(src_row, src_col))):
                             return True
                         else:
-                            dst_unit = self.get(Coord(dst_row,dst_col))
-                            if dst_unit and attacker_or_defender != dst_unit.to_string()[0] and ((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):                               
+                            destination_unit = self.get(Coord(dst_row,dst_col))
+                            if destination_unit and attacker_or_defender != destination_unit.to_string()[0] and ((dst_row <= src_row and dst_col < src_col) or (dst_col <= src_col and dst_row < src_row)):                               
                                 return True
                             else:
                                 return False
@@ -403,49 +403,49 @@ class Game:
         """Validate and perform a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
         if self.is_valid_move(coords):
             # Retrieving the source and distance coordinates 
-            src_coord = coords.src
-            dst_coord = coords.dst
+            src_coordinates = coords.src
+            dst_coordinates = coords.dst
             # Retrieving the attacker and defender units from cordinates of source and attacker
-            src_unit = self.get(src_coord)
-            dst_unit = self.get(dst_coord)
+            source_unit = self.get(src_coordinates)
+            destination_unit = self.get(dst_coordinates)
             under_attack = False
-            if src_unit is not None and dst_unit is not None and src_unit.player != dst_unit.player:
+            if source_unit is not None and destination_unit is not None and source_unit.player != destination_unit.player:
                 under_attack = True
                 # Calculate damage amounts
-                src_damage = dst_unit.damage_amount(src_unit)
-                dst_damage = src_unit.damage_amount(dst_unit)                
+                src_damage = destination_unit.damage_amount(source_unit)
+                dst_damage = source_unit.damage_amount(destination_unit)                
                 # Inflict damage on both units
-                self.mod_health(src_coord, -src_damage)
-                self.mod_health(dst_coord, -dst_damage)
+                self.mod_health(src_coordinates, -src_damage)
+                self.mod_health(dst_coordinates, -dst_damage)
 
                 # Check if units are destroyed and eliminate them from the board
-                if self.get(src_coord) is not None and self.get(src_coord).health == 0:
-                    self.set(src_coord, None)
-                if self.get(dst_coord) is not None and self.get(dst_coord).health == 0:
-                    self.set(dst_coord, None) 
+                if self.get(src_coordinates) is not None and self.get(src_coordinates).health == 0:
+                    self.set(src_coordinates, None)
+                if self.get(dst_coordinates) is not None and self.get(dst_coordinates).health == 0:
+                    self.set(dst_coordinates, None) 
             if not under_attack:
-                if self.get(dst_coord) is not None and src_unit.player == dst_unit.player:
+                if self.get(dst_coordinates) is not None and source_unit.player == destination_unit.player:
                     # checks if two players of the same team can repair each other or results in an invalid move
-                    if self.get(src_coord) != self.get(dst_coord):
-                        if(src_unit.to_string()[1] == 'A' or src_unit.to_string()[1] == 'T'):
-                            if(src_unit.to_string()[1] == 'A' and (dst_unit.to_string()[1] != 'V' and dst_unit.to_string()[1] != 'T')):
+                    if self.get(src_coordinates) != self.get(dst_coordinates):
+                        if(source_unit.to_string()[1] == 'A' or source_unit.to_string()[1] == 'T'):
+                            if(source_unit.to_string()[1] == 'A' and (destination_unit.to_string()[1] != 'V' and destination_unit.to_string()[1] != 'T')):
                                 return(False,"invalid move")
-                            elif(src_unit.to_string()[1] == 'T' and (dst_unit.to_string()[1] != 'A' and dst_unit.to_string()[1] != 'F' and dst_unit.to_string()[1] != 'P')):
+                            elif(source_unit.to_string()[1] == 'T' and (destination_unit.to_string()[1] != 'A' and destination_unit.to_string()[1] != 'F' and destination_unit.to_string()[1] != 'P')):
                                 return(False,"invalid move")
                             else:
-                                if(dst_unit.health >= 9):
+                                if(destination_unit.health >= 9):
                                     return(False,"invalid move!")
-                                dst_repair = src_unit.repair_amount(dst_unit)
-                                self.mod_health(dst_coord,+dst_repair)                            
+                                dst_repair = source_unit.repair_amount(destination_unit)
+                                self.mod_health(dst_coordinates,+dst_repair)                            
                                 return(True,"")     
                         else:
                             return(False,"invalid move")
                     # checks if for example AV9 is self killing or swaping with AV9 of other coordiante
-                    elif self.get(src_coord) == self.get(dst_coord): 
+                    elif self.get(src_coordinates) == self.get(dst_coordinates): 
                         self.splash_damage(coords.src)
-                        self.remove_dead(src_coord)
-                        if self.get(src_coord).type == UnitType.AI:
-                            if self.get(src_coord).player == Player.Attacker:
+                        self.remove_dead(src_coordinates)
+                        if self.get(src_coordinates).type == UnitType.AI:
+                            if self.get(src_coordinates).player == Player.Attacker:
                                 self._attacker_has_ai = False
                             else:
                                 self._defender_has_ai = False
@@ -453,7 +453,7 @@ class Game:
                     else:
                         return(False,"invalid move")
                 with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
-                    f.write("Move from "+src_coord.to_string()+" to "+dst_coord.to_string()+"\n")
+                    f.write("Move from "+src_coordinates.to_string()+" to "+dst_coordinates.to_string()+"\n")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
