@@ -47,4 +47,7 @@ The objective of this project is to build an AI Wargame which is a 2-player game
     </tr>
 </table>
 
-<!-- ## Running the Project -->
+## Running the Project
+1. Install Python on your machine
+2. Install the Microsoft Python extension in VSCode
+3. To run the project, click on the little play button in the top right corner that reads "Run Python File"
