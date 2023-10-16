@@ -667,6 +667,69 @@ class Game:
         return None
 
 ##############################################################################################################
+############################################### D2 Related Code ##############################################
+##############################################################################################################
+
+# e0 = (3VP1 + 3TP1 + 3FP1 + 3PP1 + 9999AIP1) − (3VP2 + 3TP2 + 3FP2 + 3PP2 + 9999AIP2)
+# where the variables represent the number of units left on the board for each type of unit
+def heuristicE0(self) -> float:
+    # TODO: Implement heuristic function
+    return random.uniform(-1, 1)
+
+# e1 = sum(di)
+# where di = distnace of unit to opposing AI in number of steps (uses A* algorithm)
+def heuristicE1(self) -> float:
+    # TODO: Implement heuristic function
+    return random.uniform(-1, 1)
+
+# e0 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
+# where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
+def heuristicE2(self) -> float:
+# TODO: Implement heuristic function
+    return random.uniform(-1, 1)
+
+def astar(self):
+    # TODO: Implement A* for e1
+    return 0
+
+def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool, heuristic_func=None) -> Tuple[float, CoordPair | None]:
+        if depth == 0 or self.is_finished():        # base case
+            return self.heuristic(), None
+
+        if maximizing_player:
+            max_score = MAX_HEURISTIC_SCORE
+            best_move = None
+            for move in self.move_candidates():
+                self.perform_move(move)
+                score, _ = self.minimax(depth - 1, alpha, beta, False, abprune, heuristic_func)
+                self.undo_move()
+                if score > max_score:
+                    max_score = score
+                    best_move = move
+                alpha = max(alpha, max_score)
+
+                if abprune:     # checks if alpha-beta pruning is turned on or off
+                    if beta <= alpha:
+                        break
+            return max_score, best_move
+        else:
+            min_score = MIN_HEURISTIC_SCORE
+            best_move = None
+            for move in self.move_candidates():
+                self.perform_move(move)
+                score, _ = self.minimax(depth - 1, alpha, beta, True, abprune, heuristic_func)
+                self.undo_move()
+                if score < min_score:
+                    min_score = score
+                    best_move = move
+                beta = min(beta, min_score)
+        
+                if abprune:     # checks if alpha-beta pruning is turned on or off
+                    if beta <= alpha:
+                        break
+            return min_score, best_move
+
+##############################################################################################################
 
 def main():
     # parse command line arguments
