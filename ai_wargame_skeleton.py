@@ -5,7 +5,9 @@ from datetime import datetime
 from enum import Enum
 from dataclasses import dataclass, field
 from time import sleep
-from typing import Tuple, TypeVar, Type, Iterable, ClassVar
+from typing import Tuple, TypeVar, Type, Iterable, ClassVar, List
+from multiprocessing import Pool
+from queue import PriorityQueue
 import random
 import requests
 
@@ -665,6 +667,149 @@ class Game:
         except Exception as error:
             print(f"Broker error: {error}")
         return None
+
+##############################################################################################################
+############################################### D2 Related Code ##############################################
+##############################################################################################################
+
+# e0 = (3VP1 + 3TP1 + 3FP1 + 3PP1 + 9999AIP1) − (3VP2 + 3TP2 + 3FP2 + 3PP2 + 9999AIP2)
+# where the variables represent the number of units left on the board for each type of unit
+def heuristicE0(self) -> float:
+    # TODO: Implement heuristic function
+    return random.uniform(-1, 1)
+
+# e1 = sum(di)
+# where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
+# uses a worker pool to parallelize the computation of the shortest path
+def heuristicE1(self) -> float:
+        player = self.current_player
+        opponent = self.players[1 - player.index]
+        start_coords = [unit.coord for unit in opponent.units if unit.is_alive()]
+        end_coords = [self.ai[player.index].coord] * len(start_coords)
+        paths = parallel_shortest_path(start_coords, end_coords)
+        total_distance = sum(len(path) for path in paths if path is not None)
+        return total_distance
+
+
+# Find the shortest path between two coordinates using the A* algorithm
+def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
+    came_from = {start: None}
+    cost_so_far = {start: 0}
+
+    while not frontier.empty():
+        current = frontier.get()
+
+        if current == end:
+            break
+
+        for next_coord in current.iter_neighbors():
+            new_cost = cost_so_far[current] + 1
+            if next_coord not in cost_so_far or new_cost < cost_so_far[next_coord]:
+                cost_so_far[next_coord] = new_cost
+                priority = new_cost + self.distance(end, next_coord)
+                frontier.put(next_coord, priority)
+                came_from[next_coord] = current
+
+    if end not in came_from:
+        return None
+
+    path = []
+    current = end
+    while current != start:
+        path.append(current)
+        current = came_from[current]
+    path.append(start)
+    path.reverse()
+    return path
+
+# Assigns a worker to each pair of start and end coordinates
+def shortest_path_worker(args):
+    start, end = args
+    return shortest_path(start, end)
+
+# Parallelize the computation of the shortest path
+def parallel_shortest_path(start_coords: List[Coord], end_coords: List[Coord]) -> List[List[Coord]]:
+    with Pool() as pool:
+        args = [(start, end) for start, end in zip(start_coords, end_coords)]
+        paths = pool.map(shortest_path_worker, args)
+    return paths
+
+
+# e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
+# where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
+def heuristicE2(self) -> float:
+# TODO: Implement heuristic function
+    return random.uniform(-1, 1)
+
+
+# # combined heuristic function
+# # TODO: adjust weights
+# def heuristic_combined(self) -> float:
+#     e0_weight = 1.0
+#     e1_weight = 1.0
+#     e2_weight = 1.0
+#     e0_score = self.heuristicE0()
+#     e1_score = self.heuristicE1()
+#     e2_score = self.heuristicE2()
+#     combined_score = (e0_weight * e0_score + e1_weight * e1_score + e2_weight * e2_score) / (e0_weight + e1_weight + e2_weight)
+#     return combined_score
+
+
+def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool, heuristic_func=None) -> Tuple[float, CoordPair | None]:
+    if depth == 0 or self.is_finished():        # base case
+        return self.heuristic(), None
+
+    if maximizing_player:
+        max_score = MAX_HEURISTIC_SCORE
+        best_move = None
+        with Pool() as pool:
+            results = []
+            for move in self.move_candidates():
+                self.perform_move(move)
+                result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, False, abprune, heuristic_func))
+                self.undo_move()
+                results.append((move, result))
+
+            for move, result in results:
+                score, _ = result.get()
+                if score > max_score:
+                    max_score = score
+                    best_move = move
+                alpha = max(alpha, max_score)
+
+                if abprune:     # checks if alpha-beta pruning is turned on or off
+                    if beta <= alpha:
+                        break
+        return max_score, best_move
+    else:
+        min_score = MIN_HEURISTIC_SCORE
+        best_move = None
+        with Pool() as pool:
+            results = []
+            for move in self.move_candidates():
+                self.perform_move(move)
+                result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, True, abprune, heuristic_func))
+                self.undo_move()
+                results.append((move, result))
+
+            for move, result in results:
+                score, _ = result.get()
+                if score < min_score:
+                    min_score = score
+                    best_move = move
+                beta = min(beta, min_score)
+
+                if abprune:     # checks if alpha-beta pruning is turned on or off
+                    if beta <= alpha:
+                        break
+        return min_score, best_move
+
+
+# assigns a worker to each move candidate in minimax
+def minimax_worker(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool, heuristic_func=None) -> Tuple[float, CoordPair | None]:
+    return self.minimax(depth, alpha, beta, maximizing_player, abprune, heuristic_func)
 
 ##############################################################################################################
 
