@@ -699,6 +699,7 @@ class Game:
 
     # e0 = (3VP1 + 3TP1 + 3FP1 + 3PP1 + 9999AIP1) − (3VP2 + 3TP2 + 3FP2 + 3PP2 + 9999AIP2)
     # where the variables represent the number of units left on the board for each type of unit
+    # admissible, but not monotonic
     def heuristicE0(self) -> float:
         # TODO: Implement heuristic function
         return random.uniform(-1, 1)
@@ -706,6 +707,7 @@ class Game:
     # e1 = sum(di)
     # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
     # uses a worker pool to parallelize the computation of the shortest path
+    # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
     def heuristicE1(self) -> float:
             player = self
             opponent = self.player_units(self.next_player)
@@ -717,6 +719,7 @@ class Game:
 
     # e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
     # where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
+    # admissible, not monotonic
     def heuristicE2(self) -> float:
     # TODO: Implement heuristic function
         return random.uniform(-1, 1)
