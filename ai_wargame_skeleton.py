@@ -602,13 +602,37 @@ class Game:
             return (0, None, 0)
 
     def suggest_move(self) -> CoordPair | None:
-        """Suggest the next move using minimax alpha beta. TODO: REPLACE RANDOM_MOVE WITH PROPER GAME LOGIC!!!"""
+        """Suggest the next move using minimax alpha beta. """
         start_time = datetime.now()
-        (score, move, avg_depth) = self.random_move()
+        depth = Options.max_depth
+        abprune = Options.alpha_beta
+        maximizing_player = Player.Attacker
+        alpha = MIN_HEURISTIC_SCORE
+        beta = MAX_HEURISTIC_SCORE
+        best_score = MIN_HEURISTIC_SCORE if maximizing_player else MAX_HEURISTIC_SCORE
+        best_unit = None
+        best_move = None
+        for unit in self.player_units(self):
+            if unit.player != self.next_player:
+                move = self.minimax_suggest_move(unit, depth, abprune)
+                score = self.heuristic_combined()
+                if maximizing_player and score > best_score:
+                    best_score = score
+                    best_unit = unit
+                    best_move = move
+                    alpha = max(alpha, best_score)
+                elif not maximizing_player and score < best_score:
+                    best_score = score
+                    best_unit = unit
+                    best_move = move
+                    beta = min(beta, best_score)
+
+                if abprune and beta <= alpha:
+                    break
+
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         self.stats.total_seconds += elapsed_seconds
-        print(f"Heuristic score: {score}")
-        print(f"Average recursive depth: {avg_depth:0.1f}")
+        print(f"Heuristic score: {self.heuristic_combined():0.1f}")
         print(f"Evals per depth: ",end='')
         for k in sorted(self.stats.evaluations_per_depth.keys()):
             print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
@@ -617,7 +641,8 @@ class Game:
         if self.stats.total_seconds > 0:
             print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
         print(f"Elapsed time: {elapsed_seconds:0.1f}s")
-        return move
+        return best_move
+
 
     def post_move_to_broker(self, move: CoordPair):
         """Send a move to the game broker."""
@@ -672,24 +697,96 @@ class Game:
 ############################################### D2 Related Code ##############################################
 ##############################################################################################################
 
-# e0 = (3VP1 + 3TP1 + 3FP1 + 3PP1 + 9999AIP1) − (3VP2 + 3TP2 + 3FP2 + 3PP2 + 9999AIP2)
-# where the variables represent the number of units left on the board for each type of unit
-def heuristicE0(self) -> float:
+    # e0 = (3VP1 + 3TP1 + 3FP1 + 3PP1 + 9999AIP1) − (3VP2 + 3TP2 + 3FP2 + 3PP2 + 9999AIP2)
+    # where the variables represent the number of units left on the board for each type of unit
+    # admissible, but not monotonic
+    def heuristicE0(self) -> float:
+        # TODO: Implement heuristic function
+        return random.uniform(-1, 1)
+
+    # e1 = sum(di)
+    # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
+    # uses a worker pool to parallelize the computation of the shortest path
+    # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
+    def heuristicE1(self) -> float:
+            player = self
+            opponent = self.player_units(self.next_player)
+            start_coords = [unit[0] for unit in player if unit[1].is_alive()]
+            end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string] * len(start_coords)
+            paths = parallel_shortest_path(start_coords, end_coords)
+            total_distance = sum(len(path) for path in paths if path is not None)
+            return total_distance
+
+    # e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
+    # where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
+    # admissible, not monotonic
+    def heuristicE2(self) -> float:
     # TODO: Implement heuristic function
-    return random.uniform(-1, 1)
+        return random.uniform(-1, 1)
 
-# e1 = sum(di)
-# where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
-# uses a worker pool to parallelize the computation of the shortest path
-def heuristicE1(self) -> float:
-        player = self.current_player
-        opponent = self.players[1 - player.index]
-        start_coords = [unit.coord for unit in opponent.units if unit.is_alive()]
-        end_coords = [self.ai[player.index].coord] * len(start_coords)
-        paths = parallel_shortest_path(start_coords, end_coords)
-        total_distance = sum(len(path) for path in paths if path is not None)
-        return total_distance
 
+    # # combined heuristic function
+    # # TODO: adjust weights
+    def heuristic_combined(self) -> float:
+        e0_weight = 1.0
+        e1_weight = 1.0
+        e2_weight = 1.0
+        e0_score = self.heuristicE0()
+        e1_score = self.heuristicE1()
+        e2_score = self.heuristicE2()
+        combined_score = (e0_weight * e0_score + e1_weight * e1_score + e2_weight * e2_score) / (e0_weight + e1_weight + e2_weight)
+        return combined_score
+
+
+    def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
+        if depth == 0 or self.is_finished():        # base case
+            return self.heuristic_combined(), None
+
+        if maximizing_player:
+            max_score = MAX_HEURISTIC_SCORE
+            best_move = None
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, False, abprune))
+                    self.undo_move()
+                    results.append((move, result))
+
+                for move, result in results:
+                    score, _ = result.get()
+                    if score > max_score:
+                        max_score = score
+                        best_move = move
+                    alpha = max(alpha, max_score)
+
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
+            return max_score, best_move
+        else:
+            min_score = MIN_HEURISTIC_SCORE
+            best_move = None
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, True, abprune))
+                    self.undo_move()
+                    results.append((move, result))
+
+                for move, result in results:
+                    score, _ = result.get()
+                    if score < min_score:
+                        min_score = score
+                        best_move = move
+                    beta = min(beta, min_score)
+
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
+            return min_score, best_move
+        
 
 # Find the shortest path between two coordinates using the A* algorithm
 def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
@@ -724,10 +821,12 @@ def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
     path.reverse()
     return path
 
+
 # Assigns a worker to each pair of start and end coordinates
 def shortest_path_worker(args):
     start, end = args
     return shortest_path(start, end)
+
 
 # Parallelize the computation of the shortest path
 def parallel_shortest_path(start_coords: List[Coord], end_coords: List[Coord]) -> List[List[Coord]]:
@@ -737,79 +836,9 @@ def parallel_shortest_path(start_coords: List[Coord], end_coords: List[Coord]) -
     return paths
 
 
-# e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
-# where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
-def heuristicE2(self) -> float:
-# TODO: Implement heuristic function
-    return random.uniform(-1, 1)
-
-
-# # combined heuristic function
-# # TODO: adjust weights
-# def heuristic_combined(self) -> float:
-#     e0_weight = 1.0
-#     e1_weight = 1.0
-#     e2_weight = 1.0
-#     e0_score = self.heuristicE0()
-#     e1_score = self.heuristicE1()
-#     e2_score = self.heuristicE2()
-#     combined_score = (e0_weight * e0_score + e1_weight * e1_score + e2_weight * e2_score) / (e0_weight + e1_weight + e2_weight)
-#     return combined_score
-
-
-def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool, heuristic_func=None) -> Tuple[float, CoordPair | None]:
-    if depth == 0 or self.is_finished():        # base case
-        return self.heuristic(), None
-
-    if maximizing_player:
-        max_score = MAX_HEURISTIC_SCORE
-        best_move = None
-        with Pool() as pool:
-            results = []
-            for move in self.move_candidates():
-                self.perform_move(move)
-                result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, False, abprune, heuristic_func))
-                self.undo_move()
-                results.append((move, result))
-
-            for move, result in results:
-                score, _ = result.get()
-                if score > max_score:
-                    max_score = score
-                    best_move = move
-                alpha = max(alpha, max_score)
-
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
-        return max_score, best_move
-    else:
-        min_score = MIN_HEURISTIC_SCORE
-        best_move = None
-        with Pool() as pool:
-            results = []
-            for move in self.move_candidates():
-                self.perform_move(move)
-                result = pool.apply_async(self.minimax_worker, (depth - 1, alpha, beta, True, abprune, heuristic_func))
-                self.undo_move()
-                results.append((move, result))
-
-            for move, result in results:
-                score, _ = result.get()
-                if score < min_score:
-                    min_score = score
-                    best_move = move
-                beta = min(beta, min_score)
-
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
-        return min_score, best_move
-
-
 # assigns a worker to each move candidate in minimax
-def minimax_worker(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool, heuristic_func=None) -> Tuple[float, CoordPair | None]:
-    return self.minimax(depth, alpha, beta, maximizing_player, abprune, heuristic_func)
+def minimax_worker(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
+    return self.minimax(depth, alpha, beta, maximizing_player, abprune)
 
 ##############################################################################################################
 
