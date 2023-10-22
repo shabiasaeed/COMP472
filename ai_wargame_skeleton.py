@@ -702,7 +702,20 @@ class Game:
     # admissible, but not monotonic
     def heuristicE0(self) -> float:
         # TODO: Implement heuristic function
-        return random.uniform(-1, 1)
+            """Heuristic function e0 based on the provided formula."""
+            attacker_VP = 3 * self.count_units(Player.Attacker, UnitType.Virus)
+            attacker_TP = 3 * self.count_units(Player.Attacker, UnitType.Tech)
+            attacker_FP = 3 * self.count_units(Player.Attacker, UnitType.Firewall)
+            attacker_PP = 3 * self.count_units(Player.Attacker, UnitType.Program)
+            attacker_AIP = 9999 * self.count_units(Player.Attacker, UnitType.AI)
+
+            defender_VP = 3 * self.count_units(Player.Defender, UnitType.Virus)
+            defender_TP = 3 * self.count_units(Player.Defender, UnitType.Tech)
+            defender_FP = 3 * self.count_units(Player.Defender, UnitType.Firewall)
+            defender_PP = 3 * self.count_units(Player.Defender, UnitType.Program)
+            defender_AIP = 9999 * self.count_units(Player.Defender, UnitType.AI)
+
+            return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
     # e1 = sum(di)
     # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
