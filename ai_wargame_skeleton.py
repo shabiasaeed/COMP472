@@ -133,7 +133,7 @@ class Coord:
     
     def clone(self) -> Coord:
         """Clone a Coord."""
-        return copy.copy(self)
+        return copy.copy(self)      
 
     def iter_range(self, dist: int) -> Iterable[Coord]:
         """Iterates over Coords inside a rectangle centered on our Coord."""
@@ -287,6 +287,19 @@ class Game:
         new = copy.copy(self)
         new.board = copy.deepcopy(self.board)
         return new
+    
+    def player_count_units(self, player: Player, unit_type: UnitType) -> int:
+        mid_cell = Coord(2, 2)
+        grid = mid_cell.iter_range(2)
+        count = 0
+        for cell in grid:
+            if (
+                self.get(cell) is not None
+                and self.get(cell).type == unit_type
+                and self.get(cell).player == player
+            ):
+                count += 1
+        return count
     
 
     def is_adjacent_occupied(self, player, coord : Coord) -> bool:
@@ -612,8 +625,8 @@ class Game:
         best_score = MIN_HEURISTIC_SCORE if maximizing_player else MAX_HEURISTIC_SCORE
         best_unit = None
         best_move = None
-        for unit in self.player_units(self):
-            if unit.player != self.next_player:
+        for unit in self.player_units(Player.Defender if maximizing_player else Player.Attacker):
+            if unit[1].player != self.next_player:
                 move = self.minimax_suggest_move(unit, depth, abprune)
                 score = self.heuristic_combined()
                 if maximizing_player and score > best_score:
@@ -641,8 +654,16 @@ class Game:
         if self.stats.total_seconds > 0:
             print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
         print(f"Elapsed time: {elapsed_seconds:0.1f}s")
+        print(best_move)
         return best_move
 
+    def minimax_suggest_move(self, unit: Unit, depth: int, abprune: bool) -> CoordPair | None:
+        """Suggest the next move for the given unit using minimax alpha beta."""
+        maximizing_player = (unit[1].player == self.next_player)
+        alpha = MIN_HEURISTIC_SCORE
+        beta = MAX_HEURISTIC_SCORE
+        _, best_move = self.minimax(self, depth, alpha, beta, maximizing_player, abprune)
+        return best_move
 
     def post_move_to_broker(self, move: CoordPair):
         """Send a move to the game broker."""
@@ -701,19 +722,17 @@ class Game:
     # where the variables represent the number of units left on the board for each type of unit
     # admissible, but not monotonic
     def heuristicE0(self) -> float:
-        # TODO: Implement heuristic function
-            """Heuristic function e0 based on the provided formula."""
-            attacker_VP = 3 * self.count_units(Player.Attacker, UnitType.Virus)
-            attacker_TP = 3 * self.count_units(Player.Attacker, UnitType.Tech)
-            attacker_FP = 3 * self.count_units(Player.Attacker, UnitType.Firewall)
-            attacker_PP = 3 * self.count_units(Player.Attacker, UnitType.Program)
-            attacker_AIP = 9999 * self.count_units(Player.Attacker, UnitType.AI)
+            attacker_VP = 3 * self.player_count_units(Player.Attacker,UnitType.Virus)
+            attacker_TP = 3 * self.player_count_units(Player.Attacker, UnitType.Tech)
+            attacker_FP = 3 * self.player_count_units(Player.Attacker, UnitType.Firewall)
+            attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
+            attacker_AIP = 9999 * self.player_count_units(Player.Attacker, UnitType.AI)
 
-            defender_VP = 3 * self.count_units(Player.Defender, UnitType.Virus)
-            defender_TP = 3 * self.count_units(Player.Defender, UnitType.Tech)
-            defender_FP = 3 * self.count_units(Player.Defender, UnitType.Firewall)
-            defender_PP = 3 * self.count_units(Player.Defender, UnitType.Program)
-            defender_AIP = 9999 * self.count_units(Player.Defender, UnitType.AI)
+            defender_VP = 3 * self.player_count_units(Player.Defender, UnitType.Virus)
+            defender_TP = 3 * self.player_count_units(Player.Defender, UnitType.Tech)
+            defender_FP = 3 * self.player_count_units(Player.Defender, UnitType.Firewall)
+            defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
+            defender_AIP = 9999 * self.player_count_units(Player.Defender, UnitType.AI)
 
             return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
@@ -722,10 +741,10 @@ class Game:
     # uses a worker pool to parallelize the computation of the shortest path
     # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
     def heuristicE1(self) -> float:
-            player = self
+            player = self.player_units(self)
             opponent = self.player_units(self.next_player)
             start_coords = [unit[0] for unit in player if unit[1].is_alive()]
-            end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string] * len(start_coords)
+            end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string()] * len(start_coords)
             paths = parallel_shortest_path(start_coords, end_coords)
             total_distance = sum(len(path) for path in paths if path is not None)
             return total_distance
@@ -734,9 +753,20 @@ class Game:
     # where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
     # admissible, not monotonic
     def heuristicE2(self) -> float:
-    # TODO: Implement heuristic function
-        return random.uniform(-1, 1)
 
+            attacker_VP = 9 * self.player_count_units(Player.Attacker, UnitType.Virus)
+            attacker_TP = 1 * self.player_count_units(Player.Attacker, UnitType.Tech)
+            attacker_FP = 1 * self.player_count_units(Player.Attacker, UnitType.Firewall)
+            attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
+            attacker_AIP = 3 * self.player_count_units(Player.Attacker, UnitType.AI)
+
+            defender_VP = 9 * self.player_count_units(Player.Defender, UnitType.Virus)
+            defender_TP = 1 * self.player_count_units(Player.Defender, UnitType.Tech)
+            defender_FP = 1 * self.player_count_units(Player.Defender, UnitType.Firewall)
+            defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
+            defender_AIP = 3 * self.player_count_units(Player.Defender, UnitType.AI)
+
+            return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
     # # combined heuristic function
     # # TODO: adjust weights
