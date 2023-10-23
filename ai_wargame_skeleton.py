@@ -10,10 +10,12 @@ from multiprocessing import Pool
 from queue import PriorityQueue
 import random
 import requests
+import os
 
 # maximum and minimum values for our heuristic scores (usually represents an end of game condition)
 MAX_HEURISTIC_SCORE = 2000000000
 MIN_HEURISTIC_SCORE = -2000000000
+cwd = os.getcwd()
 
 class UnitType(Enum):
     """Every unit type."""
@@ -467,13 +469,16 @@ class Game:
                         self.is_finished()
                     else:
                         return(False,"invalid move")
-                with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+
+                file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+                with open(file_path,'a') as f:
                     f.write("Move from "+source_coordinates.to_string()+" to "+destination_coordinates.to_string()+"\n")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
-        with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
-                    f.write("Move from "+coords.src.to_string()+" to "+coords.dst.to_string()+"\n")
+        file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+        with open(file_path,'a') as f:
+            f.write("Move from "+coords.src.to_string()+" to "+coords.dst.to_string()+"\n")
         return (False,"invalid move")
 
     def next_turn(self):
@@ -510,7 +515,8 @@ class Game:
 
     def __str__(self) -> str:
         """Default string representation of a game."""
-        with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+        file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+        with open(file_path,'a') as f:
             f.write(self.to_string()+"\n")
         return self.to_string()
     
@@ -556,7 +562,8 @@ class Game:
                     break
                 else:
                     print("The move is not valid! Try again.")                    
-                    with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{self.options.max_turns}.txt",'a') as f:
+                    file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+                    with open(file_path,'a') as f:
                         f.write("Move from "+str(mv.src)+" to "+str(mv.dst)+"\n")
                         f.write("The move is not valid! Try again. \n")
 
@@ -662,7 +669,8 @@ class Game:
         maximizing_player = (unit[1].player == self.next_player)
         alpha = MIN_HEURISTIC_SCORE
         beta = MAX_HEURISTIC_SCORE
-        _, best_move = self.minimax(self, depth, alpha, beta, maximizing_player, abprune)
+        # _, best_move = self.minimax(self, depth, alpha, beta, maximizing_player, abprune)
+        _, best_move = self.minimax(depth, alpha, beta, maximizing_player, abprune)
         return best_move
 
     def post_move_to_broker(self, move: CoordPair):
@@ -771,9 +779,9 @@ class Game:
     # # combined heuristic function
     # # TODO: adjust weights
     def heuristic_combined(self) -> float:
-        e0_weight = 1.0
-        e1_weight = 1.0
-        e2_weight = 1.0
+        e0_weight = 1.0     # least informed
+        e1_weight = 5.0     # most informed
+        e2_weight = 3.0     # semi informed
         e0_score = self.heuristicE0()
         e1_score = self.heuristicE1()
         e2_score = self.heuristicE2()
@@ -928,7 +936,8 @@ def main():
 
     # Printing and writing max turns 
     print("Max Turns = "+str(options.max_turns))
-    with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{options.max_turns}.txt","a") as f:
+    file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+    with open(file_path,'a') as f:
         f.write("Max turns = "+str(options.max_turns) +"\n")
 
     # create a new game
@@ -941,7 +950,8 @@ def main():
         winner = game.has_winner()
         if winner is not None:
             print(f"{winner.name} wins! in {game.turns_played} turns ")
-            with open(f"C:/Users/vishv/Desktop/gameTrace-false-0-{options.max_turns}.txt",'a') as f:
+            file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+            with open(file_path,'a') as f:  
                 winner = winner.name
                 f.write(winner+" wins! in "+ str(game.turns_played) + " turns")
             break
