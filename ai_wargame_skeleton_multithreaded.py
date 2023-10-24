@@ -6,6 +6,7 @@ from enum import Enum
 from dataclasses import dataclass, field
 from time import sleep
 from typing import Tuple, TypeVar, Type, Iterable, ClassVar, List
+from multiprocessing import Pool
 from queue import PriorityQueue
 import random
 import requests
@@ -635,7 +636,26 @@ class Game:
         else:
             maximizing_player = False
         
-        _, best_move = self.minimax(depth=depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+        best_move = self.minimax_suggest_move(maximizing_player, depth, abprune)
+
+        # for unit in self.player_units(Player.Defender if maximizing_player else Player.Attacker):
+        #     if unit[1].player != self.next_player:
+        #         move = self.minimax_suggest_move(unit, depth, abprune)
+        #         score = self.heuristic_combined()
+        #         if maximizing_player and score > best_score:
+        #             best_score = score
+        #             best_unit = unit
+        #             best_move = move
+        #             alpha = max(alpha, best_score)
+        #         elif not maximizing_player and score < best_score:
+        #             best_score = score
+        #             best_unit = unit
+        #             best_move = move
+        #             beta = min(beta, best_score)
+
+        #         if abprune and beta <= alpha:
+        #             break
+
 
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         self.stats.total_seconds += elapsed_seconds
@@ -649,6 +669,11 @@ class Game:
             print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
         print(f"Elapsed time: {elapsed_seconds:0.1f}s")
         print(best_move)
+        return best_move
+
+    def minimax_suggest_move(self, maximizingPlayer: Player, depth: int, abprune: bool) -> CoordPair | None:
+        """Suggest the next move for the given unit using minimax alpha beta."""
+        _, best_move = self.minimax(depth=depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizingPlayer, abprune=abprune)
         return best_move
 
     def post_move_to_broker(self, move: CoordPair):
@@ -774,44 +799,46 @@ class Game:
         if maximizing_player:
             max_score = MAX_HEURISTIC_SCORE
             best_move = None
-            results = []
-            for move in self.move_candidates():
-                self.perform_move(move)
-                _, result = self.minimax(depth, alpha, beta, False, abprune)
-                self.perform_move(move.reverse_move())
-                results.append((move, result))
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker(depth, alpha, beta, False, abprune))
+                    self.perform_move(move.reverse_move())
+                    results.append((move, result))
 
-            for move, result in results:
-                score, _ = result.get()
-                if score > max_score:
-                    max_score = score
-                    best_move = move
-                alpha = max(alpha, max_score)
+                for move, result in results:
+                    score, _ = result.get()
+                    if score > max_score:
+                        max_score = score
+                        best_move = move
+                    alpha = max(alpha, max_score)
 
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
             return max_score, best_move
         else:
             min_score = MIN_HEURISTIC_SCORE
             best_move = None
-            results = []
-            for move in self.move_candidates():
-                self.perform_move(move)
-                _, result = self.minimax(depth, alpha, beta, True, abprune)
-                self.perform_move(move.reverse_move)
-                results.append((move, result))
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker(depth, alpha, beta, True, abprune))
+                    self.perform_move(move.reverse_move)
+                    results.append((move, result))
 
-            for move, result in results:
-                score, _ = result.get()
-                if score < min_score:
-                    min_score = score
-                    best_move = move
-                beta = min(beta, min_score)
+                for move, result in results:
+                    score, _ = result.get()
+                    if score < min_score:
+                        min_score = score
+                        best_move = move
+                    beta = min(beta, min_score)
 
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
             return min_score, best_move
         
 
@@ -847,6 +874,25 @@ class Game:
         path.append(start)
         path.reverse()
         return path
+
+
+    # Assigns a worker to each pair of start and end coordinates
+    def shortest_path_worker(self, args):
+        start, end = args
+        return self.shortest_path(start, end)
+
+
+    # Parallelize the computation of the shortest path
+    def parallel_shortest_path(self, start_coords: List[Coord], end_coords: List[Coord]) -> List[List[Coord]]:
+        with Pool() as pool:
+            args = [(start, end) for start, end in zip(start_coords, end_coords)]
+            paths = pool.map(self.shortest_path_worker, args)
+        return paths
+
+
+    # assigns a worker to each move candidate in minimax
+    def minimax_worker(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
+        return self.minimax(depth, alpha, beta, maximizing_player, abprune)
 
 ##############################################################################################################
 
