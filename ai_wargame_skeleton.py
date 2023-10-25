@@ -194,10 +194,6 @@ class CoordPair:
         """Clones a CoordPair."""
         return copy.copy(self)
 
-    def reverse_move(self) -> CoordPair:
-        """Reverses a move."""
-        return CoordPair(self.dst,self.src)
-
     def iter_rectangle(self) -> Iterable[Coord]:
         """Iterates over cells of a rectangular area."""
         for row in range(self.src.row,self.dst.row+1):
@@ -418,6 +414,11 @@ class Game:
             except:
                 continue
 
+
+    def reverse_move(self, coords : CoordPair) -> CoordPair:
+        """Reverse a move expressed as a CoordPair."""
+        self.set(coords.src,self.get(coords.dst))
+        self.set(coords.dst,None)
         
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
         """Validate and perform a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
@@ -635,11 +636,11 @@ class Game:
         else:
             maximizing_player = False
         
-        _, best_move = self.minimax(depth=depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+        _, best_move = self.minimax(depthParam=depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
 
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         self.stats.total_seconds += elapsed_seconds
-        print(f"Heuristic score: {self.heuristic_combined():0.1f}")
+        print(f"Heuristic score: {self.heuristicE2():0.1f}")
         print(f"Evals per depth: ",end='')
         for k in sorted(self.stats.evaluations_per_depth.keys()):
             print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
@@ -731,7 +732,7 @@ class Game:
             opponent = self.player_units(self.next_player)
             start_coords = [unit[0] for unit in player if unit[1].is_alive()]
             end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string()] * len(start_coords)
-            paths = self.parallel_shortest_path(start_coords, end_coords)
+            paths = self.shortest_path(start_coords, end_coords)
             total_distance = sum(len(path) for path in paths if path is not None)
             return total_distance
 
@@ -754,8 +755,7 @@ class Game:
 
             return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
-    # # combined heuristic function
-    # # TODO: adjust weights
+    # combined heuristic function
     def heuristic_combined(self) -> float:
         e0_weight = 1.0     # least informed
         e1_weight = 5.0     # most informed
@@ -767,22 +767,23 @@ class Game:
         return combined_score
 
 
-    def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
-        if depth == 0 or self.is_finished():        # base case
-            return self.heuristicE0(), None
+    def minimax(self, depthParam: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
+        depth = 0
+
+        if depth == depthParam or self.is_finished():        # base case
+            print(self.heuristicE2())
+            return self.heuristicE2(), None
 
         if maximizing_player:
+            print("maximizing")
             max_score = MAX_HEURISTIC_SCORE
             best_move = None
-            results = []
             for move in self.move_candidates():
                 self.perform_move(move)
-                _, result = self.minimax(depth, alpha, beta, False, abprune)
-                self.perform_move(move.reverse_move())
-                results.append((move, result))
-
-            for move, result in results:
-                score, _ = result.get()
+                score, _ = self.minimax(depth+1, alpha, beta, False, abprune)
+                self.reverse_move(move)
+                print("score: ", score)
+                print("max_score: ", max_score)
                 if score > max_score:
                     max_score = score
                     best_move = move
@@ -791,19 +792,18 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
+            print("best move: ", best_move)
             return max_score, best_move
         else:
+            print("minimizing")
             min_score = MIN_HEURISTIC_SCORE
             best_move = None
-            results = []
             for move in self.move_candidates():
                 self.perform_move(move)
-                _, result = self.minimax(depth, alpha, beta, True, abprune)
-                self.perform_move(move.reverse_move)
-                results.append((move, result))
-
-            for move, result in results:
-                score, _ = result.get()
+                score, _ = self.minimax(depth+1, alpha, beta, True, abprune)
+                self.reverse_move(move)
+                print("score: ", score)
+                print("min_score: ", min_score)
                 if score < min_score:
                     min_score = score
                     best_move = move
@@ -812,29 +812,35 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
+            print("best move: ", best_move)
             return min_score, best_move
         
 
     # Find the shortest path between two coordinates using the A* algorithm
     def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
         frontier = PriorityQueue()
-        frontier.put(start, 0)
-        came_from = {start: None}
-        cost_so_far = {start: 0}
+        frontier.put((0, start))
+        came_from = {}
+        cost_so_far = {}
+
+        cost_so_far[start] = 0
 
         while not frontier.empty():
-            current = frontier.get()
+            _, current = frontier.get()
 
             if current == end:
                 break
 
             for next_coord in current.iter_neighbors():
-                new_cost = cost_so_far[current] + 1
+                new_cost = cost_so_far.get(current, float('inf')) + 1
                 if next_coord not in cost_so_far or new_cost < cost_so_far[next_coord]:
                     cost_so_far[next_coord] = new_cost
                     priority = new_cost + self.distance(end, next_coord)
-                    frontier.put(next_coord, priority)
+                    frontier.put((priority, next_coord))
                     came_from[next_coord] = current
+
+            # Remove current from cost_so_far to save memory
+            del cost_so_far[current]
 
         if end not in came_from:
             return None
@@ -844,6 +850,7 @@ class Game:
         while current != start:
             path.append(current)
             current = came_from[current]
+
         path.append(start)
         path.reverse()
         return path
