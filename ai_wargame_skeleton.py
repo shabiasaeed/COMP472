@@ -679,8 +679,9 @@ class Game:
                     children.append((self_clone, move))
             suicide = CoordPair(coord, coord)
             if self_clone.perform_move(suicide)[0]:
+                # print(coord, self_clone.get(coord))
                 self_clone.next_turn()
-                children.append((self_clone, suicide))
+                # children.append((self_clone, suicide))
         return children
 
     def suggest_move(self) -> CoordPair | None:
@@ -699,7 +700,6 @@ class Game:
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         print(f"Suggested move: {best_move} with score of {score} ")
         self.stats.total_seconds += elapsed_seconds
-        print(f"Heuristic score: {self.heuristicE0():0.1f}")
         print(f"Evals per depth: ",end='')
         for k in sorted(self.stats.evaluations_per_depth.keys()):
             print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
@@ -713,7 +713,6 @@ class Game:
         file_path = f"{cwd}\\gameTrace-{date}-ab{self.options.alpha_beta}-maxDepth{self.options.max_depth}-maxTurns{self.options.max_turns}-maxTime{self.options.max_time}.txt"        
         with open(file_path,'a') as f:
             f.write(f"Suggested move: {best_move} with score of {score} \n")
-            f.write(f"Heuristic score: {self.heuristicE0():0.1f}\n")
             f.write(f"Evals per depth: ")
             for k in sorted(self.stats.evaluations_per_depth.keys()):
                 f.write(f"{k}:{self.stats.evaluations_per_depth[k]} ")
