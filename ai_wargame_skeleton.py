@@ -666,24 +666,26 @@ class Game:
             move.dst = src
             yield move.clone()
 
+    # Checking all valid moves for a player by checking adjacent coordinates
     def move_candidates(self, player: Player) -> Iterable[CoordPair]:
-        """Generate valid moves for a particular player. Overloaded function."""
+        """Generate valid moves for a particular player. Overloaded function. """
         children = []
         for (coord,unit) in self.player_units(player):
             adjCoords = Coord.iter_adjacent(coord)
-            for adjCoord in adjCoords:
+            for adjCoord in adjCoords: # Checking for possible next moves for unit
                 self_clone = self.clone()
                 move = CoordPair(coord,adjCoord)
-                if self_clone.perform_move(move)[0]:
+                if self_clone.perform_move(move)[0]: # Checking if the move is valid
                     self_clone.next_turn()
                     children.append((self_clone, move))
-            suicide = CoordPair(coord, coord)
-            if self_clone.perform_move(suicide)[0]:
+            suicide = CoordPair(coord, coord) # Checking if unit is self-destructing moves
+            if self_clone.perform_move(suicide)[0]: 
                 # print(coord, self_clone.get(coord))
                 self_clone.next_turn()
                 # children.append((self_clone, suicide))
         return children
-
+    
+    # Calculating the next moveusing minimax algorithm with alpha-beta pruning and logging the metrics
     def suggest_move(self) -> CoordPair | None:
         """Suggest the next move using minimax alpha beta. """
         start_time = datetime.now()
@@ -783,6 +785,7 @@ class Game:
         e0_weight = 1.0     # least informed
         e1_weight = 5.0     # most informed
         e2_weight = 3.0     # semi informed
+        # Calculating individual heuristic scores
         e0_score = self.heuristicE0()
         e1_score = self.heuristicE1()
         e2_score = self.heuristicE2()
