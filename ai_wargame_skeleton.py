@@ -616,6 +616,24 @@ class Game:
             move.dst = src
             yield move.clone()
 
+    def move_candidates(self, player: Player) -> Iterable[CoordPair]:
+        """Generate valid moves for a particular player."""
+        children = []
+        for (coord,unit) in self.player_units(player):
+            adjCoords = Coord.iter_adjacent(coord)
+            for adjCoord in adjCoords:
+                self_clone = self.clone()
+                move = CoordPair(coord,adjCoord)
+                if self_clone.perform_move(move)[0]:
+                    self_clone.next_turn()
+                    children.append((self_clone, move))
+            suicide = CoordPair(coord, coord)
+            if self_clone.perform_move(suicide)[0]:
+                self_clone.next_turn()
+                children.append((self_clone, suicide))
+        return children
+            
+
     def random_move(self) -> Tuple[int, CoordPair | None, float]:
         """Returns a random move."""
         move_candidates = list(self.move_candidates())
@@ -650,7 +668,7 @@ class Game:
         if self.stats.total_seconds > 0:
             print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
         print(f"Elapsed time: {elapsed_seconds:0.1f}s")
-        print(best_move)
+        # TODO: Add AI lose condition if goes over max time
         return best_move
 
     def post_move_to_broker(self, move: CoordPair):
@@ -769,22 +787,13 @@ class Game:
 
     def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
         if depth == 0 or self.is_finished():        # base case
-            # print("depth:", depth)
-            # print("e2: ", self.heuristicE0())
             return self.heuristicE0(), None
 
         if maximizing_player:
-            # print("maximizing")
             max_score = alpha
             best_move = None
-            for move in self.move_candidates():
-                self_clone = self.clone()
-                self_clone.perform_move(move)
-                score, _ = self.minimax(depth-1, alpha, beta, False, abprune)
-                self_clone.reverse_move(move)
-                score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
-                # print("score: ", score)
-                # print("max_score: ", max_score)
+            for (candidate, move) in self.move_candidates(Player.Attacker):
+                score, _ = candidate.minimax(depth-1, alpha, beta, True, abprune)
                 if score >= max_score:
                     max_score = score
                     best_move = move
@@ -793,20 +802,12 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
-            # print("best move: ", best_move)
             return max_score, best_move
         else:
-            # print("minimizing")
             min_score = beta
             best_move = None
-            for move in self.move_candidates():
-                self_clone = self.clone()
-                self_clone.perform_move(move)
-                score, _ = self.minimax(depth-1, alpha, beta, True, abprune)
-                self_clone.reverse_move(move)
-                # score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
-                # print("score: ", score)
-                # print("min_score: ", min_score)
+            for (candidate, move) in self.move_candidates(Player.Defender):
+                score, _ = candidate.minimax(depth-1, alpha, beta, False, abprune)
                 if score <= min_score:
                     min_score = score
                     best_move = move
@@ -815,7 +816,6 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
-            # print("best move: ", best_move)
             return min_score, best_move
         
 
@@ -826,7 +826,7 @@ class Game:
         came_from = {}
         cost_so_far = {}
 
-        cost_so_far[start] = 0
+        cost_so_far[str(start)] = 0
 
         while not frontier.empty():
             _, current = frontier.get()
@@ -835,24 +835,24 @@ class Game:
                 break
 
             for next_coord in current.iter_neighbors():
-                new_cost = cost_so_far.get(current, float('inf')) + 1
-                if next_coord not in cost_so_far or new_cost < cost_so_far[next_coord]:
-                    cost_so_far[next_coord] = new_cost
+                new_cost = cost_so_far.get(str(current), float('inf')) + 1
+                if str(next_coord) not in cost_so_far or new_cost < cost_so_far[str(next_coord)]:
+                    cost_so_far[str(next_coord)] = new_cost
                     priority = new_cost + self.distance(end, next_coord)
                     frontier.put((priority, next_coord))
-                    came_from[next_coord] = current
+                    came_from[str(next_coord)] = current
 
             # Remove current from cost_so_far to save memory
-            del cost_so_far[current]
+            del cost_so_far[str(current)]
 
-        if end not in came_from:
+        if str(end) not in came_from:
             return None
 
         path = []
         current = end
         while current != start:
             path.append(current)
-            current = came_from[current]
+            current = came_from[str(current)]
 
         path.append(start)
         path.reverse()
