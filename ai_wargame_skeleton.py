@@ -798,7 +798,7 @@ class Game:
         if maximizing_player:
             max_score = alpha
             best_move = None
-            for (candidate, move) in self.move_candidates(Player.Attacker):
+            for (candidate, move) in self.move_candidates(Player.Attacker): # Finding the highest score move for Attacker
                 score, _ = candidate.minimax(depth-1, alpha, beta, True, abprune)
                 if score >= max_score:
                     max_score = score
@@ -812,7 +812,7 @@ class Game:
         else:
             min_score = beta
             best_move = None
-            for (candidate, move) in self.move_candidates(Player.Defender):
+            for (candidate, move) in self.move_candidates(Player.Defender): # Finding the lowest score move for Defender
                 score, _ = candidate.minimax(depth-1, alpha, beta, False, abprune)
                 if score <= min_score:
                     min_score = score
