@@ -955,3 +955,99 @@ Move from B4 to A4
 Move from A4 to A3
 Move from A3 to A2
 Move from A2 to A1
+Max turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from D3 to C3
+Move from C3 to B3
+Move from B3 to A3
+Move from A3 to A2
+Move from D4 to C4
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from A3 to A2
+Move from A2 to A1
+Max turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from D3 to C3
+Move from C3 to B3
+Move from B3 to A3
+Move from A3 to A2
+Move from D4 to C4
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from A3 to A2
+Move from A2 to A1
+Max turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from D3 to C3
+Move from C3 to B3
+Move from B3 to A3
+Move from A3 to A2
+Move from D4 to C4
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from A3 to A2
+Move from A2 to A1
+Max turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from D3 to C3
+Move from C3 to B3
+Move from B3 to A3
+Move from A3 to A2
+Move from D4 to C4
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from A3 to A2
+Move from A2 to A1
