@@ -6,6 +6,7 @@ from enum import Enum
 from dataclasses import dataclass, field
 from time import sleep
 from typing import Tuple, TypeVar, Type, Iterable, ClassVar, List
+from multiprocessing import Pool
 from queue import PriorityQueue
 import random
 import requests
@@ -193,6 +194,10 @@ class CoordPair:
     def clone(self) -> CoordPair:
         """Clones a CoordPair."""
         return copy.copy(self)
+
+    def reverse_move(self) -> CoordPair:
+        """Reverses a move."""
+        return CoordPair(self.dst,self.src)
 
     def iter_rectangle(self) -> Iterable[Coord]:
         """Iterates over cells of a rectangular area."""
@@ -414,11 +419,6 @@ class Game:
             except:
                 continue
 
-
-    def reverse_move(self, coords : CoordPair) -> CoordPair:
-        """Reverse a move expressed as a CoordPair."""
-        self.set(coords.src,self.get(coords.dst))
-        self.set(coords.dst,None)
         
     def perform_move(self, coords : CoordPair) -> Tuple[bool,str]:
         """Validate and perform a move expressed as a CoordPair. TODO: WRITE MISSING CODE!!!"""
@@ -616,24 +616,6 @@ class Game:
             move.dst = src
             yield move.clone()
 
-    def move_candidates(self, player: Player) -> Iterable[CoordPair]:
-        """Generate valid moves for a particular player."""
-        children = []
-        for (coord,unit) in self.player_units(player):
-            adjCoords = Coord.iter_adjacent(coord)
-            for adjCoord in adjCoords:
-                self_clone = self.clone()
-                move = CoordPair(coord,adjCoord)
-                if self_clone.perform_move(move)[0]:
-                    self_clone.next_turn()
-                    children.append((self_clone, move))
-            suicide = CoordPair(coord, coord)
-            if self_clone.perform_move(suicide)[0]:
-                self_clone.next_turn()
-                children.append((self_clone, suicide))
-        return children
-            
-
     def random_move(self) -> Tuple[int, CoordPair | None, float]:
         """Returns a random move."""
         move_candidates = list(self.move_candidates())
@@ -646,20 +628,38 @@ class Game:
     def suggest_move(self) -> CoordPair | None:
         """Suggest the next move using minimax alpha beta. """
         start_time = datetime.now()
-        abprune = self.options.alpha_beta
-        max_depth = self.options.max_depth
+        depth = Options.max_depth
+        abprune = Options.alpha_beta
 
         if self.next_player == Player.Attacker:
             maximizing_player = True
         else:
             maximizing_player = False
         
-        score, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+        best_move = self.minimax_suggest_move(maximizing_player, depth, abprune)
+
+        # for unit in self.player_units(Player.Defender if maximizing_player else Player.Attacker):
+        #     if unit[1].player != self.next_player:
+        #         move = self.minimax_suggest_move(unit, depth, abprune)
+        #         score = self.heuristic_combined()
+        #         if maximizing_player and score > best_score:
+        #             best_score = score
+        #             best_unit = unit
+        #             best_move = move
+        #             alpha = max(alpha, best_score)
+        #         elif not maximizing_player and score < best_score:
+        #             best_score = score
+        #             best_unit = unit
+        #             best_move = move
+        #             beta = min(beta, best_score)
+
+        #         if abprune and beta <= alpha:
+        #             break
+
 
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
-        print(f"Suggested move: {best_move} with score of {score} ")
         self.stats.total_seconds += elapsed_seconds
-        print(f"Heuristic score: {self.heuristicE0():0.1f}")
+        print(f"Heuristic score: {self.heuristic_combined():0.1f}")
         print(f"Evals per depth: ",end='')
         for k in sorted(self.stats.evaluations_per_depth.keys()):
             print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
@@ -668,7 +668,12 @@ class Game:
         if self.stats.total_seconds > 0:
             print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
         print(f"Elapsed time: {elapsed_seconds:0.1f}s")
-        # TODO: Add AI lose condition if goes over max time
+        print(best_move)
+        return best_move
+
+    def minimax_suggest_move(self, maximizingPlayer: Player, depth: int, abprune: bool) -> CoordPair | None:
+        """Suggest the next move for the given unit using minimax alpha beta."""
+        _, best_move = self.minimax(depth=depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizingPlayer, abprune=abprune)
         return best_move
 
     def post_move_to_broker(self, move: CoordPair):
@@ -728,52 +733,54 @@ class Game:
     # where the variables represent the number of units left on the board for each type of unit
     # admissible, but not monotonic
     def heuristicE0(self) -> float:
-        attacker_VP = 3 * self.player_count_units(Player.Attacker,UnitType.Virus)
-        attacker_TP = 3 * self.player_count_units(Player.Attacker, UnitType.Tech)
-        attacker_FP = 3 * self.player_count_units(Player.Attacker, UnitType.Firewall)
-        attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
-        attacker_AIP = 9999 * self.player_count_units(Player.Attacker, UnitType.AI)
+            attacker_VP = 3 * self.player_count_units(Player.Attacker,UnitType.Virus)
+            attacker_TP = 3 * self.player_count_units(Player.Attacker, UnitType.Tech)
+            attacker_FP = 3 * self.player_count_units(Player.Attacker, UnitType.Firewall)
+            attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
+            attacker_AIP = 9999 * self.player_count_units(Player.Attacker, UnitType.AI)
 
-        defender_VP = 3 * self.player_count_units(Player.Defender, UnitType.Virus)
-        defender_TP = 3 * self.player_count_units(Player.Defender, UnitType.Tech)
-        defender_FP = 3 * self.player_count_units(Player.Defender, UnitType.Firewall)
-        defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
-        defender_AIP = 9999 * self.player_count_units(Player.Defender, UnitType.AI)
+            defender_VP = 3 * self.player_count_units(Player.Defender, UnitType.Virus)
+            defender_TP = 3 * self.player_count_units(Player.Defender, UnitType.Tech)
+            defender_FP = 3 * self.player_count_units(Player.Defender, UnitType.Firewall)
+            defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
+            defender_AIP = 9999 * self.player_count_units(Player.Defender, UnitType.AI)
 
-        return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
+            return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
     # e1 = sum(di)
     # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
     # uses a worker pool to parallelize the computation of the shortest path
     # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
     def heuristicE1(self) -> float:
-        player = self.player_units(self)
-        opponent = self.player_units(self.next_player)
-        start_coords = [unit[0] for unit in player if unit[1].is_alive()]
-        end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string()] * len(start_coords)
-        paths = self.shortest_path(start_coords, end_coords)
-        total_distance = sum(len(path) for path in paths if path is not None)
-        return total_distance
+            player = self.player_units(self)
+            opponent = self.player_units(self.next_player)
+            start_coords = [unit[0] for unit in player if unit[1].is_alive()]
+            end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string()] * len(start_coords)
+            paths = self.parallel_shortest_path(start_coords, end_coords)
+            total_distance = sum(len(path) for path in paths if path is not None)
+            return total_distance
 
     # e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
     # where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
     # admissible, not monotonic
     def heuristicE2(self) -> float:
-        attacker_VP = 9 * self.player_count_units(Player.Attacker, UnitType.Virus)
-        attacker_TP = 1 * self.player_count_units(Player.Attacker, UnitType.Tech)
-        attacker_FP = 1 * self.player_count_units(Player.Attacker, UnitType.Firewall)
-        attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
-        attacker_AIP = 3 * self.player_count_units(Player.Attacker, UnitType.AI)
 
-        defender_VP = 9 * self.player_count_units(Player.Defender, UnitType.Virus)
-        defender_TP = 1 * self.player_count_units(Player.Defender, UnitType.Tech)
-        defender_FP = 1 * self.player_count_units(Player.Defender, UnitType.Firewall)
-        defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
-        defender_AIP = 3 * self.player_count_units(Player.Defender, UnitType.AI)
+            attacker_VP = 9 * self.player_count_units(Player.Attacker, UnitType.Virus)
+            attacker_TP = 1 * self.player_count_units(Player.Attacker, UnitType.Tech)
+            attacker_FP = 1 * self.player_count_units(Player.Attacker, UnitType.Firewall)
+            attacker_PP = 3 * self.player_count_units(Player.Attacker, UnitType.Program)
+            attacker_AIP = 3 * self.player_count_units(Player.Attacker, UnitType.AI)
 
-        return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
+            defender_VP = 9 * self.player_count_units(Player.Defender, UnitType.Virus)
+            defender_TP = 1 * self.player_count_units(Player.Defender, UnitType.Tech)
+            defender_FP = 1 * self.player_count_units(Player.Defender, UnitType.Firewall)
+            defender_PP = 3 * self.player_count_units(Player.Defender, UnitType.Program)
+            defender_AIP = 3 * self.player_count_units(Player.Defender, UnitType.AI)
 
-    # combined heuristic function
+            return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
+
+    # # combined heuristic function
+    # # TODO: adjust weights
     def heuristic_combined(self) -> float:
         e0_weight = 1.0     # least informed
         e1_weight = 5.0     # most informed
@@ -790,73 +797,102 @@ class Game:
             return self.heuristicE0(), None
 
         if maximizing_player:
-            max_score = alpha
+            max_score = MAX_HEURISTIC_SCORE
             best_move = None
-            for (candidate, move) in self.move_candidates(Player.Attacker):
-                score, _ = candidate.minimax(depth-1, alpha, beta, True, abprune)
-                if score >= max_score:
-                    max_score = score
-                    best_move = move
-                alpha = max(alpha, max_score)
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker(depth, alpha, beta, False, abprune))
+                    self.perform_move(move.reverse_move())
+                    results.append((move, result))
 
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
+                for move, result in results:
+                    score, _ = result.get()
+                    if score > max_score:
+                        max_score = score
+                        best_move = move
+                    alpha = max(alpha, max_score)
+
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
             return max_score, best_move
         else:
-            min_score = beta
+            min_score = MIN_HEURISTIC_SCORE
             best_move = None
-            for (candidate, move) in self.move_candidates(Player.Defender):
-                score, _ = candidate.minimax(depth-1, alpha, beta, False, abprune)
-                if score <= min_score:
-                    min_score = score
-                    best_move = move
-                beta = min(beta, min_score)
+            with Pool() as pool:
+                results = []
+                for move in self.move_candidates():
+                    self.perform_move(move)
+                    result = pool.apply_async(self.minimax_worker(depth, alpha, beta, True, abprune))
+                    self.perform_move(move.reverse_move)
+                    results.append((move, result))
 
-                if abprune:     # checks if alpha-beta pruning is turned on or off
-                    if beta <= alpha:
-                        break
+                for move, result in results:
+                    score, _ = result.get()
+                    if score < min_score:
+                        min_score = score
+                        best_move = move
+                    beta = min(beta, min_score)
+
+                    if abprune:     # checks if alpha-beta pruning is turned on or off
+                        if beta <= alpha:
+                            break
             return min_score, best_move
         
 
     # Find the shortest path between two coordinates using the A* algorithm
     def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
         frontier = PriorityQueue()
-        frontier.put((0, start))
-        came_from = {}
-        cost_so_far = {}
-
-        cost_so_far[str(start)] = 0
+        frontier.put(start, 0)
+        came_from = {start: None}
+        cost_so_far = {start: 0}
 
         while not frontier.empty():
-            _, current = frontier.get()
+            current = frontier.get()
 
             if current == end:
                 break
 
             for next_coord in current.iter_neighbors():
-                new_cost = cost_so_far.get(str(current), float('inf')) + 1
-                if str(next_coord) not in cost_so_far or new_cost < cost_so_far[str(next_coord)]:
-                    cost_so_far[str(next_coord)] = new_cost
+                new_cost = cost_so_far[current] + 1
+                if next_coord not in cost_so_far or new_cost < cost_so_far[next_coord]:
+                    cost_so_far[next_coord] = new_cost
                     priority = new_cost + self.distance(end, next_coord)
-                    frontier.put((priority, next_coord))
-                    came_from[str(next_coord)] = current
+                    frontier.put(next_coord, priority)
+                    came_from[next_coord] = current
 
-            # Remove current from cost_so_far to save memory
-            del cost_so_far[str(current)]
-
-        if str(end) not in came_from:
+        if end not in came_from:
             return None
 
         path = []
         current = end
         while current != start:
             path.append(current)
-            current = came_from[str(current)]
-
+            current = came_from[current]
         path.append(start)
         path.reverse()
         return path
+
+
+    # Assigns a worker to each pair of start and end coordinates
+    def shortest_path_worker(self, args):
+        start, end = args
+        return self.shortest_path(start, end)
+
+
+    # Parallelize the computation of the shortest path
+    def parallel_shortest_path(self, start_coords: List[Coord], end_coords: List[Coord]) -> List[List[Coord]]:
+        with Pool() as pool:
+            args = [(start, end) for start, end in zip(start_coords, end_coords)]
+            paths = pool.map(self.shortest_path_worker, args)
+        return paths
+
+
+    # assigns a worker to each move candidate in minimax
+    def minimax_worker(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
+        return self.minimax(depth, alpha, beta, maximizing_player, abprune)
 
 ##############################################################################################################
 
