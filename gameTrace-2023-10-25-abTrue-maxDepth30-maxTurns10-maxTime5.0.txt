@@ -1,0 +1,142 @@
+Game type = GameType.AttackerVsComp
+Alpha-beta = True
+Max depth = 30
+Max turns = 10
+Max time = 5.0
+
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Next player: Defender
+Turns played: 1
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .  aP9  .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Suggested move: C0 C1 with score of 9999 
+Heuristic score: 0.0
+Evals per depth: 
+Eval perf.: 0.0k/s
+Elapsed time: 0.4s
+Next player: Attacker
+Turns played: 2
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF9  .  aP9  .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Next player: Defender
+Turns played: 3
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF9 aP9  .   .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Suggested move: C1 C2 with score of 9999 
+Heuristic score: 0.0
+Evals per depth: 
+Eval perf.: 0.0k/s
+Elapsed time: 0.0s
+Next player: Attacker
+Turns played: 4
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF8 aP8  .   .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Next player: Defender
+Turns played: 5
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF7 aP7  .   .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Suggested move: C1 C2 with score of 9999 
+Heuristic score: 0.0
+Evals per depth: 
+Eval perf.: 0.0k/s
+Elapsed time: 0.0s
+Next player: Attacker
+Turns played: 6
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF6 aP6  .   .  
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Next player: Defender
+Turns played: 7
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF6 aP6  .   .  
+D:  .   .  aP9 aF9 aV9 
+E:  .   .   .  aV9 aA9 
+
+Suggested move: C1 C2 with score of 9999 
+Heuristic score: 0.0
+Evals per depth: 
+Eval perf.: 0.0k/s
+Elapsed time: 0.1s
+Next player: Attacker
+Turns played: 8
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF5 aP5  .   .  
+D:  .   .  aP9 aF9 aV9 
+E:  .   .   .  aV9 aA9 
+
+Next player: Defender
+Turns played: 9
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF5 aP3  .   .  
+D:  .   .  aP7  .  aV7 
+E:  .   .   .  aV7 aA7 
+
+Suggested move: C1 C2 with score of -3 
+Heuristic score: -3.0
+Evals per depth: 
+Eval perf.: 0.0k/s
+Elapsed time: 0.1s
+Next player: Attacker
+Turns played: 10
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C:  .  dF4 aP2  .   .  
+D:  .   .  aP7  .  aV7 
+E:  .   .   .  aV7 aA7 
+
+Defender wins! in 10 turns

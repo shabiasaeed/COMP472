@@ -474,15 +474,9 @@ class Game:
                     else:
                         return(False,"invalid move")
 
-                file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
-                with open(file_path,'a') as f:
-                    f.write("Move from "+source_coordinates.to_string()+" to "+destination_coordinates.to_string()+"\n")
                 self.set(coords.dst,self.get(coords.src))
                 self.set(coords.src,None)
             return (True,"")
-        file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
-        with open(file_path,'a') as f:
-            f.write("Move from "+coords.src.to_string()+" to "+coords.dst.to_string()+"\n")
         return (False,"invalid move")
 
     def next_turn(self):
@@ -519,7 +513,8 @@ class Game:
 
     def __str__(self) -> str:
         """Default string representation of a game."""
-        file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+        date = datetime.now().strftime("%Y-%m-%d")
+        file_path = f"{cwd}\\gameTrace-{date}-ab{self.options.alpha_beta}-maxDepth{self.options.max_depth}-maxTurns{self.options.max_turns}-maxTime{self.options.max_time}.txt"    
         with open(file_path,'a') as f:
             f.write(self.to_string()+"\n")
         return self.to_string()
@@ -566,10 +561,6 @@ class Game:
                     break
                 else:
                     print("The move is not valid! Try again.")                    
-                    file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
-                    with open(file_path,'a') as f:
-                        f.write("Move from "+str(mv.src)+" to "+str(mv.dst)+"\n")
-                        f.write("The move is not valid! Try again. \n")
 
     def computer_turn(self) -> CoordPair | None:
         """Computer plays a move."""
@@ -604,36 +595,6 @@ class Game:
                 return Player.Attacker    
         return Player.Defender
 
-    def move_candidates(self) -> Iterable[CoordPair]:
-        """Generate valid move candidates for the next player."""
-        move = CoordPair()
-        for (src,_) in self.player_units(self.next_player):
-            move.src = src
-            for dst in src.iter_adjacent():
-                move.dst = dst
-                if self.is_valid_move(move):
-                    yield move.clone()
-            move.dst = src
-            yield move.clone()
-
-    def move_candidates(self, player: Player) -> Iterable[CoordPair]:
-        """Generate valid moves for a particular player."""
-        children = []
-        for (coord,unit) in self.player_units(player):
-            adjCoords = Coord.iter_adjacent(coord)
-            for adjCoord in adjCoords:
-                self_clone = self.clone()
-                move = CoordPair(coord,adjCoord)
-                if self_clone.perform_move(move)[0]:
-                    self_clone.next_turn()
-                    children.append((self_clone, move))
-            suicide = CoordPair(coord, coord)
-            if self_clone.perform_move(suicide)[0]:
-                self_clone.next_turn()
-                children.append((self_clone, suicide))
-        return children
-            
-
     def random_move(self) -> Tuple[int, CoordPair | None, float]:
         """Returns a random move."""
         move_candidates = list(self.move_candidates())
@@ -643,33 +604,6 @@ class Game:
         else:
             return (0, None, 0)
 
-    def suggest_move(self) -> CoordPair | None:
-        """Suggest the next move using minimax alpha beta. """
-        start_time = datetime.now()
-        abprune = self.options.alpha_beta
-        max_depth = self.options.max_depth
-
-        if self.next_player == Player.Attacker:
-            maximizing_player = True
-        else:
-            maximizing_player = False
-        
-        score, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
-
-        elapsed_seconds = (datetime.now() - start_time).total_seconds()
-        print(f"Suggested move: {best_move} with score of {score} ")
-        self.stats.total_seconds += elapsed_seconds
-        print(f"Heuristic score: {self.heuristicE0():0.1f}")
-        print(f"Evals per depth: ",end='')
-        for k in sorted(self.stats.evaluations_per_depth.keys()):
-            print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
-        print()
-        total_evals = sum(self.stats.evaluations_per_depth.values())
-        if self.stats.total_seconds > 0:
-            print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
-        print(f"Elapsed time: {elapsed_seconds:0.1f}s")
-        # TODO: Add AI lose condition if goes over max time
-        return best_move
 
     def post_move_to_broker(self, move: CoordPair):
         """Send a move to the game broker."""
@@ -720,6 +654,79 @@ class Game:
             print(f"Broker error: {error}")
         return None
 
+    def move_candidates(self) -> Iterable[CoordPair]:
+        """Generate valid move candidates for the next player."""
+        move = CoordPair()
+        for (src,_) in self.player_units(self.next_player):
+            move.src = src
+            for dst in src.iter_adjacent():
+                move.dst = dst
+                if self.is_valid_move(move):
+                    yield move.clone()
+            move.dst = src
+            yield move.clone()
+
+    def move_candidates(self, player: Player) -> Iterable[CoordPair]:
+        """Generate valid moves for a particular player. Overloaded function."""
+        children = []
+        for (coord,unit) in self.player_units(player):
+            adjCoords = Coord.iter_adjacent(coord)
+            for adjCoord in adjCoords:
+                self_clone = self.clone()
+                move = CoordPair(coord,adjCoord)
+                if self_clone.perform_move(move)[0]:
+                    self_clone.next_turn()
+                    children.append((self_clone, move))
+            suicide = CoordPair(coord, coord)
+            if self_clone.perform_move(suicide)[0]:
+                self_clone.next_turn()
+                children.append((self_clone, suicide))
+        return children
+
+    def suggest_move(self) -> CoordPair | None:
+        """Suggest the next move using minimax alpha beta. """
+        start_time = datetime.now()
+        abprune = self.options.alpha_beta
+        max_depth = self.options.max_depth
+
+        if self.next_player == Player.Attacker:
+            maximizing_player = True
+        else:
+            maximizing_player = False
+        
+        score, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+
+        elapsed_seconds = (datetime.now() - start_time).total_seconds()
+        print(f"Suggested move: {best_move} with score of {score} ")
+        self.stats.total_seconds += elapsed_seconds
+        print(f"Heuristic score: {self.heuristicE0():0.1f}")
+        print(f"Evals per depth: ",end='')
+        for k in sorted(self.stats.evaluations_per_depth.keys()):
+            print(f"{k}:{self.stats.evaluations_per_depth[k]} ",end='')
+        print()
+        total_evals = sum(self.stats.evaluations_per_depth.values())
+        if self.stats.total_seconds > 0:
+            print(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s")
+        print(f"Elapsed time: {elapsed_seconds:0.1f}s")
+
+        date = datetime.now().strftime("%Y-%m-%d")
+        file_path = f"{cwd}\\gameTrace-{date}-ab{self.options.alpha_beta}-maxDepth{self.options.max_depth}-maxTurns{self.options.max_turns}-maxTime{self.options.max_time}.txt"        
+        with open(file_path,'a') as f:
+            f.write(f"Suggested move: {best_move} with score of {score} \n")
+            f.write(f"Heuristic score: {self.heuristicE0():0.1f}\n")
+            f.write(f"Evals per depth: ")
+            for k in sorted(self.stats.evaluations_per_depth.keys()):
+                f.write(f"{k}:{self.stats.evaluations_per_depth[k]} ")
+            f.write("\n")
+            f.write(f"Eval perf.: {total_evals/self.stats.total_seconds/1000:0.1f}k/s\n")
+            f.write(f"Elapsed time: {elapsed_seconds:0.1f}s\n")
+
+        if elapsed_seconds > self.options.max_time:
+            print("Time limit exceeded!")
+            print("AI loses!")
+            exit(1)
+        return best_move
+    
 ##############################################################################################################
 ############################################### D2 Related Code ##############################################
 ##############################################################################################################
@@ -744,7 +751,6 @@ class Game:
 
     # e1 = sum(di)
     # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
-    # uses a worker pool to parallelize the computation of the shortest path
     # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
     def heuristicE1(self) -> float:
         player = self.player_units(self)
@@ -903,9 +909,15 @@ def main():
 
     # Printing and writing max turns 
     print("Max Turns = "+str(options.max_turns))
-    file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+    date = datetime.now().strftime("%Y-%m-%d")
+    file_path = f"{cwd}\\gameTrace-{date}-ab{options.alpha_beta}-maxDepth{options.max_depth}-maxTurns{options.max_turns}-maxTime{options.max_time}.txt"        
     with open(file_path,'a') as f:
+        f.write("Game type = "+str(options.game_type) +"\n")
+        f.write("Alpha-beta = "+str(options.alpha_beta) +"\n")
+        f.write("Max depth = "+str(options.max_depth) +"\n")
         f.write("Max turns = "+str(options.max_turns) +"\n")
+        f.write("Max time = "+str(options.max_time) +"\n")
+        f.write("\n")
 
     # create a new game
     game = Game(options=options)
@@ -917,7 +929,7 @@ def main():
         winner = game.has_winner()
         if winner is not None:
             print(f"{winner.name} wins! in {game.turns_played} turns ")
-            file_path = cwd + "/gameTrace-false-0-{self.options.max_turns}.txt"        
+            file_path = f"{cwd}\\gameTrace-{date}-ab{options.alpha_beta}-maxDepth{options.max_depth}-maxTurns{options.max_turns}-maxTime{options.max_time}.txt"      
             with open(file_path,'a') as f:  
                 winner = winner.name
                 f.write(winner+" wins! in "+ str(game.turns_played) + " turns")
