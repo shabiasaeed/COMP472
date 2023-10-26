@@ -628,14 +628,15 @@ class Game:
     def suggest_move(self) -> CoordPair | None:
         """Suggest the next move using minimax alpha beta. """
         start_time = datetime.now()
-        abprune = Options.alpha_beta
+        abprune = self.options.alpha_beta
+        max_depth = self.options.max_depth
 
         if self.next_player == Player.Attacker:
             maximizing_player = True
         else:
             maximizing_player = False
         
-        _, best_move = self.minimax(depth=0, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+        _, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
 
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         self.stats.total_seconds += elapsed_seconds
@@ -766,21 +767,23 @@ class Game:
 
 
     def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
-        if depth == Options.max_depth or self.is_finished():        # base case
+        if depth == 0 or self.is_finished():        # base case
+            print("depth:", depth)
             print("e2: ", self.heuristicE0())
             return self.heuristicE0(), None
 
         if maximizing_player:
             print("maximizing")
-            max_score = MAX_HEURISTIC_SCORE
+            max_score = alpha
             best_move = None
             for move in self.move_candidates():
                 self.perform_move(move)
-                score, _ = self.minimax(depth+1, alpha, beta, False, abprune)
+                score, _ = self.minimax(depth-1, alpha, beta, False, abprune)
                 self.reverse_move(move)
+                score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
                 print("score: ", score)
                 print("max_score: ", max_score)
-                if score > max_score:
+                if score >= max_score:
                     max_score = score
                     best_move = move
                 alpha = max(alpha, max_score)
@@ -792,15 +795,16 @@ class Game:
             return max_score, best_move
         else:
             print("minimizing")
-            min_score = MIN_HEURISTIC_SCORE
+            min_score = beta
             best_move = None
             for move in self.move_candidates():
                 self.perform_move(move)
-                score, _ = self.minimax(depth+1, alpha, beta, True, abprune)
+                score, _ = self.minimax(depth-1, alpha, beta, True, abprune)
                 self.reverse_move(move)
+                # score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
                 print("score: ", score)
                 print("min_score: ", min_score)
-                if score < min_score:
+                if score <= min_score:
                     min_score = score
                     best_move = move
                 beta = min(beta, min_score)
