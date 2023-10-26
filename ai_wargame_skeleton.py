@@ -682,7 +682,7 @@ class Game:
             if self_clone.perform_move(suicide)[0]: 
                 # print(coord, self_clone.get(coord))
                 self_clone.next_turn()
-                # children.append((self_clone, suicide))
+                children.append((self_clone, suicide))
         return children
     
     # Calculating the next moveusing minimax algorithm with alpha-beta pruning and logging the metrics
@@ -750,17 +750,18 @@ class Game:
 
         return (attacker_VP + attacker_TP + attacker_FP + attacker_PP + attacker_AIP) - (defender_VP + defender_TP + defender_FP + defender_PP + defender_AIP)
 
-    # e1 = sum(di)
-    # where di = distance of unit to opposing AI in number of steps (uses A* algorithm)
-    # admissible, most informed, not monotonic (purposely not monotonic to allow V and T to backtrack as needed)
+    # e1 = (hAP1 + hVP1 + hTP1 + hFP1 + hPP1) − (hAP2 + hVP2 + hTP2 + hFP2 + hPP2)
+    # where the variables represent the amount of health of each unit left on the board 
+    # admissible, not monotonic
     def heuristicE1(self) -> float:
-        player = self.player_units(self)
-        opponent = self.player_units(self.next_player)
-        start_coords = [unit[0] for unit in player if unit[1].is_alive()]
-        end_coords = [unit[0] for unit in opponent if "AI" in unit[1].to_string()] * len(start_coords)
-        paths = self.shortest_path(start_coords, end_coords)
-        total_distance = sum(len(path) for path in paths if path is not None)
-        return total_distance
+        hP1 = 0     # health of player 1
+        hP2 = 0     # health of player 2
+        for coord, unit in self.player_units(Player.Attacker):
+            hP1 += unit.health
+        for coord, unit in self.player_units(Player.Defender):
+            hP2 += unit.health
+        return hP1 - hP2
+
 
     # e2 = (3AP1 + 9VP1 + 1TP1 + 1FP1 + 3PP1) − (3AP2 + 9VP2 + 1TP2 + 1FP2 + 3PP2)
     # where the numerical coefficients correspond to the damage that can be done to an AI unit by each type of unit
@@ -782,9 +783,9 @@ class Game:
 
     # combined heuristic function
     def heuristic_combined(self) -> float:
-        e0_weight = 1.0     # least informed
-        e1_weight = 5.0     # most informed
-        e2_weight = 3.0     # semi informed
+        e0_weight = 1.0
+        e1_weight = 2.0
+        e2_weight = 3.0 
         # Calculating individual heuristic scores
         e0_score = self.heuristicE0()
         e1_score = self.heuristicE1()
@@ -795,13 +796,13 @@ class Game:
 
     def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
         if depth == 0 or self.is_finished():        # base case
-            return self.heuristicE0(), None
+            return self.heuristic_combined(), None
 
         if maximizing_player:
             max_score = alpha
             best_move = None
             for (candidate, move) in self.move_candidates(Player.Attacker): # Finding the highest score move for Attacker
-                score, _ = candidate.minimax(depth-1, alpha, beta, True, abprune)
+                score, _ = candidate.minimax(depth-1, alpha, beta, False, abprune)
                 if score >= max_score:
                     max_score = score
                     best_move = move
@@ -815,7 +816,7 @@ class Game:
             min_score = beta
             best_move = None
             for (candidate, move) in self.move_candidates(Player.Defender): # Finding the lowest score move for Defender
-                score, _ = candidate.minimax(depth-1, alpha, beta, False, abprune)
+                score, _ = candidate.minimax(depth-1, alpha, beta, True, abprune)
                 if score <= min_score:
                     min_score = score
                     best_move = move
@@ -825,46 +826,6 @@ class Game:
                     if beta <= alpha:
                         break
             return min_score, best_move
-        
-
-    # Find the shortest path between two coordinates using the A* algorithm
-    def shortest_path(self, start: Coord, end: Coord) -> List[Coord]:
-        frontier = PriorityQueue()
-        frontier.put((0, start))
-        came_from = {}
-        cost_so_far = {}
-
-        cost_so_far[str(start)] = 0
-
-        while not frontier.empty():
-            _, current = frontier.get()
-
-            if current == end:
-                break
-
-            for next_coord in current.iter_neighbors():
-                new_cost = cost_so_far.get(str(current), float('inf')) + 1
-                if str(next_coord) not in cost_so_far or new_cost < cost_so_far[str(next_coord)]:
-                    cost_so_far[str(next_coord)] = new_cost
-                    priority = new_cost + self.distance(end, next_coord)
-                    frontier.put((priority, next_coord))
-                    came_from[str(next_coord)] = current
-
-            # Remove current from cost_so_far to save memory
-            del cost_so_far[str(current)]
-
-        if str(end) not in came_from:
-            return None
-
-        path = []
-        current = end
-        while current != start:
-            path.append(current)
-            current = came_from[str(current)]
-
-        path.append(start)
-        path.reverse()
-        return path
 
 ##############################################################################################################
 
