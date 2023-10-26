@@ -636,9 +636,10 @@ class Game:
         else:
             maximizing_player = False
         
-        _, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
+        score, best_move = self.minimax(depth=max_depth, alpha=MIN_HEURISTIC_SCORE, beta=MAX_HEURISTIC_SCORE, maximizing_player=maximizing_player, abprune=abprune)
 
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
+        print(f"Suggested move: {best_move} with score of {score} ")
         self.stats.total_seconds += elapsed_seconds
         print(f"Heuristic score: {self.heuristicE0():0.1f}")
         print(f"Evals per depth: ",end='')
@@ -768,21 +769,22 @@ class Game:
 
     def minimax(self, depth: int, alpha: float, beta: float, maximizing_player: bool, abprune: bool) -> Tuple[float, CoordPair | None]:
         if depth == 0 or self.is_finished():        # base case
-            print("depth:", depth)
-            print("e2: ", self.heuristicE0())
+            # print("depth:", depth)
+            # print("e2: ", self.heuristicE0())
             return self.heuristicE0(), None
 
         if maximizing_player:
-            print("maximizing")
+            # print("maximizing")
             max_score = alpha
             best_move = None
             for move in self.move_candidates():
-                self.perform_move(move)
+                self_clone = self.clone()
+                self_clone.perform_move(move)
                 score, _ = self.minimax(depth-1, alpha, beta, False, abprune)
-                self.reverse_move(move)
+                self_clone.reverse_move(move)
                 score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
-                print("score: ", score)
-                print("max_score: ", max_score)
+                # print("score: ", score)
+                # print("max_score: ", max_score)
                 if score >= max_score:
                     max_score = score
                     best_move = move
@@ -791,19 +793,20 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
-            print("best move: ", best_move)
+            # print("best move: ", best_move)
             return max_score, best_move
         else:
-            print("minimizing")
+            # print("minimizing")
             min_score = beta
             best_move = None
             for move in self.move_candidates():
-                self.perform_move(move)
+                self_clone = self.clone()
+                self_clone.perform_move(move)
                 score, _ = self.minimax(depth-1, alpha, beta, True, abprune)
-                self.reverse_move(move)
+                self_clone.reverse_move(move)
                 # score = max(MIN_HEURISTIC_SCORE, min(MAX_HEURISTIC_SCORE, score))
-                print("score: ", score)
-                print("min_score: ", min_score)
+                # print("score: ", score)
+                # print("min_score: ", min_score)
                 if score <= min_score:
                     min_score = score
                     best_move = move
@@ -812,7 +815,7 @@ class Game:
                 if abprune:     # checks if alpha-beta pruning is turned on or off
                     if beta <= alpha:
                         break
-            print("best move: ", best_move)
+            # print("best move: ", best_move)
             return min_score, best_move
         
 

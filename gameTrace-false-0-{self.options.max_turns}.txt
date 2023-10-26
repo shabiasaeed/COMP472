@@ -1329,4 +1329,705 @@ C: dF9  .   .   .   .
 D:  .   .   .   .   .  
 E:  .   .   .   .   .  
 
-Defender wins! in 0 turns
+Defender wins! in 0 turnsMax turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from B4 to A4
+Move from A4 to A3
+Move from A4 to A4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to C4
+Move from D4 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to D3
+Move from E3 to E2
+Move from E3 to E4
+Move from E3 to E3
+Move from B4 to B4
+Move from C4 to C4
+Move from C4 to C4
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .   .  
+D:  .   .   .   .   .  
+E:  .   .   .   .   .  
+
+Defender wins! in 0 turnsMax turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Max turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to C3
+Move from C4 to B4
+Move from C4 to C4
+Move from C4 to B4
+Move from D3 to C3
+Move from C4 to B4
+Move from D3 to D2
+Move from C4 to B4
+Move from D3 to D3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from D4 to D4
+Move from C4 to B4
+Move from E2 to D2
+Move from C4 to B4
+Move from E2 to E1
+Move from C4 to B4
+Move from E2 to E2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from E3 to E3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to C4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to C3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to D2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to D3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D4 to D4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to D2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to E1
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to E2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E3 to E3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E4 to E4
+Next player: Defender
+Turns played: 1
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF7 aV7 
+E:  .   .  aP9 aV7  .  
+
+Defender wins! in 1 turnsMax turns = 100
+Next player: Attacker
+Turns played: 0
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF9 aV9 
+E:  .   .  aP9 aV9 aA9 
+
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to C3
+Move from C4 to B4
+Move from C4 to C4
+Move from C4 to B4
+Move from D3 to C3
+Move from C4 to B4
+Move from D3 to D2
+Move from C4 to B4
+Move from D3 to D3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from D4 to D4
+Move from C4 to B4
+Move from E2 to D2
+Move from C4 to B4
+Move from E2 to E1
+Move from C4 to B4
+Move from E2 to E2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from E3 to E3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to B4
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to C4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to C3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to D2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D3 to D3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from D4 to D4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to D2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to E1
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E2 to E2
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E3 to E3
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E4 to E4
+Move from C4 to B4
+Move from C4 to B4
+Move from C4 to C3
+Move from C4 to C4
+Move from D3 to C3
+Move from D3 to D2
+Move from D3 to D3
+Move from D4 to D4
+Move from E2 to D2
+Move from E2 to E1
+Move from E2 to E2
+Move from E3 to E3
+Move from E4 to E4
+Move from E4 to E4
+Next player: Defender
+Turns played: 1
+
+    0   1   2   3   4  
+A: dA9 dT9 dF9  .   .  
+B: dT9 dP9  .   .   .  
+C: dF9  .   .   .  aP9 
+D:  .   .   .  aF7 aV7 
+E:  .   .  aP9 aV7  .  
+
+Defender wins! in 1 turns
